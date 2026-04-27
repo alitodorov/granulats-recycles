@@ -67,60 +67,21 @@ const updateCalculations = () => {
     // 5. Gamification (Option E)
     updateGamification(margin, co2Saved, energyCons);
 
-    // Alertes visuelles dynamiques
+    // Alertes visuelles
     const marginEl = document.getElementById('margin-value').parentElement;
-    const badgeEl = marginEl.querySelector('.badge');
-
     if (margin < 0) {
-        marginEl.style.background = 'linear-gradient(135deg, #ef4444 0%, #991b1b 100%)';
-        badgeEl.innerText = "Alerte Rentabilité";
-        badgeEl.style.background = "rgba(0,0,0,0.3)";
-    } else if (margin > 8) {
-        marginEl.style.background = 'linear-gradient(135deg, #10b981 0%, #064e3b 100%)';
-        badgeEl.innerText = "Performance Exceptionnelle";
-        badgeEl.style.background = "rgba(255,255,255,0.2)";
+        marginEl.style.background = 'linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)';
     } else {
-        marginEl.style.background = 'rgba(255,255,255,0.05)';
-        badgeEl.innerText = "Objectif en cours";
-        badgeEl.style.background = "var(--glass-border)";
+        marginEl.style.background = 'linear-gradient(135deg, #27ae60 0%, #2ecc71 100%)';
     }
 
     updateBreakdown(buyPrice, transportCost, energyCost);
-    updateChefTip(margin, totalCO2, energyCons);
-};
-
-const updateChefTip = (margin, co2, energy) => {
-    const tipText = document.getElementById('tip-text');
-    if (!tipText) return;
-
-    let tips = [
-        "N'oubliez pas : un bon granulat recyclé, c'est d'abord un bon tri à la source ! ♻️",
-        "Le secret de la rentabilité ? Optimiser les trajets de retour à vide. 🚛",
-        "Réduire votre conso de GNR de 0.1L/t peut sauver des milliers d'euros par an. ⛽",
-        "La norme NF EN 206 autorise des taux de substitution élevés selon l'exposition. Vérifiez vos classes ! 🧪",
-        "L'économie circulaire, c'est transformer un coût de mise en décharge en ressource précieuse. 💎"
-    ];
-
-    if (energy > 1.0) {
-        tips.unshift("Alerte GNR : Votre consommation est élevée. Vérifiez l'état de vos filtres et injecteurs ! ⚠️");
-    }
-    if (margin < 2) {
-        tips.unshift("Marge faible : Avez-vous pensé à valoriser davantage vos sables de recyclage ? 🧐");
-    }
-    if (co2 < 5) {
-        tips.unshift("Superbe impact ! Vous êtes déjà sur la voie de la décarbonation profonde. 🍃");
-    }
-
-    // Choisir un conseil basé sur l'état ou aléatoire
-    const selectedTip = tips[0]; 
-    tipText.innerText = selectedTip;
 };
 
 const updateBreakdown = (buy, trans, energy) => {
     const breakdown = document.getElementById('breakdown');
-    if (!breakdown) return;
     breakdown.innerHTML = `
-        <ul style="list-style: none; font-size: 0.9rem; color: var(--text-muted);">
+        <ul style="list-style: none; font-size: 0.9rem; color: var(--text-light);">
             <li>📥 Redevance réception : -${buy.toFixed(2)} € (Gain)</li>
             <li>🚛 Transport amont : 0.00 € (Client)</li>
             <li>⚙️ Transformation : ${energy.toFixed(2)} €</li>
@@ -215,89 +176,6 @@ applyBtn.onclick = () => {
     }
 };
 
-// --- SYSTÈME DE SAUVEGARDE LOCALE (Phase S) ---
-
-const saveBtn = document.getElementById('save-simulation');
-const historyList = document.getElementById('history-list');
-
-const saveSimulation = () => {
-    const name = prompt("Nommez votre simulation (ex: Chantier A, Scénario 1) :");
-    if (!name) return;
-
-    const simulationData = {
-        id: Date.now(),
-        name: name,
-        date: new Date().toLocaleString('fr-FR'),
-        inputs: {
-            buyPrice: document.getElementById('buy-price').value,
-            transportDist: document.getElementById('transport-dist').value,
-            energyCons: document.getElementById('energy-cons').value,
-            sellPrice: document.getElementById('sell-price').value,
-            subRate: document.getElementById('substitution-rate').value,
-            exposure: document.getElementById('exposure-class').value
-        }
-    };
-
-    let history = JSON.parse(localStorage.getItem('eco_simulations') || '[]');
-    history.unshift(simulationData);
-    localStorage.setItem('eco_simulations', JSON.stringify(history));
-    
-    renderHistory();
-    alert("Simulation sauvegardée avec succès !");
-};
-
-const renderHistory = () => {
-    const history = JSON.parse(localStorage.getItem('eco_simulations') || '[]');
-    if (!historyList) return;
-
-    if (history.length === 0) {
-        historyList.innerHTML = '<p class="empty-state">Aucune simulation enregistrée pour le moment.</p>';
-        return;
-    }
-
-    historyList.innerHTML = history.map(sim => `
-        <div class="history-item" data-id="${sim.id}">
-            <div class="history-info">
-                <span class="history-name">${sim.name}</span>
-                <span class="history-date">${sim.date}</span>
-            </div>
-            <div class="history-actions">
-                <button class="btn-icon load" onclick="loadSimulation(${sim.id})" title="Charger">📂</button>
-                <button class="btn-icon delete" onclick="deleteSimulation(${sim.id})" title="Supprimer">🗑️</button>
-            </div>
-        </div>
-    `).join('');
-};
-
-window.loadSimulation = (id) => {
-    const history = JSON.parse(localStorage.getItem('eco_simulations') || '[]');
-    const sim = history.find(s => s.id === id);
-    if (!sim) return;
-
-    // Remplissage des inputs
-    document.getElementById('buy-price').value = sim.inputs.buyPrice;
-    document.getElementById('transport-dist').value = sim.inputs.transportDist;
-    document.getElementById('energy-cons').value = sim.inputs.energyCons;
-    document.getElementById('sell-price').value = sim.inputs.sellPrice;
-    document.getElementById('substitution-rate').value = sim.inputs.subRate;
-    document.getElementById('exposure-class').value = sim.inputs.exposure;
-
-    updateCalculations();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-};
-
-window.deleteSimulation = (id) => {
-    if (!confirm("Voulez-vous vraiment supprimer cette simulation ?")) return;
-    let history = JSON.parse(localStorage.getItem('eco_simulations') || '[]');
-    history = history.filter(s => s.id !== id);
-    localStorage.setItem('eco_simulations', JSON.stringify(history));
-    renderHistory();
-};
-
-if (saveBtn) {
-    saveBtn.addEventListener('click', saveSimulation);
-}
-
 // Listeners globaux
 document.addEventListener('input', (e) => {
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') {
@@ -307,4 +185,3 @@ document.addEventListener('input', (e) => {
 
 // Initialisation
 updateCalculations();
-renderHistory();
