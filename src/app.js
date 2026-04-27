@@ -28,9 +28,9 @@ const updateCalculations = () => {
     document.getElementById('rate-display').innerText = subRate;
 
     // 1. Calcul de la rentabilité Fabricant
-    const transportCost = distance * 0.15; // km * coût
+    const transportCost = 0; // Payé par le client
     const energyCost = energyCons * 1.2;
-    const costPrice = buyPrice + transportCost + energyCost + 2;
+    const costPrice = (-buyPrice) + transportCost + energyCost + 2;
     const margin = sellPrice - costPrice;
 
     // 2. Calcul du CO2 Fabricant
@@ -82,8 +82,8 @@ const updateBreakdown = (buy, trans, energy) => {
     const breakdown = document.getElementById('breakdown');
     breakdown.innerHTML = `
         <ul style="list-style: none; font-size: 0.9rem; color: var(--text-light);">
-            <li>📦 Matière première : ${buy.toFixed(2)} €</li>
-            <li>🚛 Transport amont : ${trans.toFixed(2)} €</li>
+            <li>📥 Redevance réception : -${buy.toFixed(2)} € (Gain)</li>
+            <li>🚛 Transport amont : 0.00 € (Client)</li>
             <li>⚙️ Transformation : ${energy.toFixed(2)} €</li>
             <li>🏢 Frais fixes : 2.00 €</li>
         </ul>
@@ -111,6 +111,69 @@ const updateGamification = (margin, co2, energy) => {
     if (co2 > 10) t1.classList.replace('locked', 'unlocked'); else t1.classList.replace('unlocked', 'locked');
     if (margin > 5) t2.classList.replace('locked', 'unlocked'); else t2.classList.replace('unlocked', 'locked');
     if (energy < 0.75) t3.classList.replace('locked', 'unlocked'); else t3.classList.replace('unlocked', 'locked');
+};
+
+// Logique du Calculateur GNR (Modal)
+const gnrModal = document.getElementById('gnr-modal');
+const openBtn = document.getElementById('open-gnr-calc');
+const closeBtn = document.querySelector('.close-modal');
+const applyBtn = document.getElementById('apply-gnr-calc');
+
+// Inputs Modal
+const modalLiters = document.getElementById('modal-gnr-liters');
+const modalTonnes = document.getElementById('modal-gnr-tonnes');
+const modalHours = document.getElementById('modal-gnr-hours');
+
+// Résultats Modal
+const resLT = document.getElementById('res-l-t');
+const resTH = document.getElementById('res-t-h');
+
+openBtn.onclick = () => gnrModal.style.display = 'flex';
+closeBtn.onclick = () => gnrModal.style.display = 'none';
+
+window.onclick = (event) => {
+    if (event.target == gnrModal) gnrModal.style.display = 'none';
+};
+
+const calculateGnrModal = () => {
+    const l = parseFloat(modalLiters.value) || 0;
+    const t = parseFloat(modalTonnes.value) || 0;
+    const h = parseFloat(modalHours.value) || 0;
+
+    let l_t = 0;
+    let t_h = 0;
+
+    if (t > 0) {
+        l_t = l / t;
+        resLT.innerText = `${l_t.toFixed(2)} L/t`;
+    } else {
+        resLT.innerText = `0.00 L/t`;
+    }
+
+    if (h > 0) {
+        t_h = t / h;
+        resTH.innerText = `${t_h.toFixed(2)} t/h`;
+    } else {
+        resTH.innerText = `0.00 t/h`;
+    }
+
+    return l_t;
+};
+
+// Listeners pour calcul temps réel dans la modal
+[modalLiters, modalTonnes, modalHours].forEach(el => {
+    el.addEventListener('input', calculateGnrModal);
+});
+
+applyBtn.onclick = () => {
+    const result = calculateGnrModal();
+    if (result > 0) {
+        document.getElementById('energy-cons').value = result.toFixed(2);
+        updateCalculations();
+        gnrModal.style.display = 'none';
+    } else {
+        alert("Veuillez saisir des données valides (tonnage > 0)");
+    }
 };
 
 // Listeners globaux

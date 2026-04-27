@@ -28,8 +28,8 @@
                     <h2><span class="icon">📥</span> Données d'entrée</h2>
                     <form id="calc-form">
                         <div class="form-group">
-                            <label for="buy-price">Prix d'achat déblais (€/t)</label>
-                            <input type="number" id="buy-price" value="0" step="0.1">
+                            <label for="buy-price">Redevance réception (€/t payés par client)</label>
+                            <input type="number" id="buy-price" value="10" step="0.5">
                         </div>
                         <div class="form-group">
                             <label for="transport-dist">Distance transport amont (km)</label>
@@ -37,7 +37,10 @@
                         </div>
                         <div class="form-group">
                             <label for="energy-cons">Conso GNR (L/tonne)</label>
-                            <input type="number" id="energy-cons" value="0.8" step="0.05">
+                            <div class="input-with-action">
+                                <input type="number" id="energy-cons" value="0.8" step="0.05">
+                                <button type="button" id="open-gnr-calc" class="btn-mini" title="Calculer depuis le terrain">🧮</button>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label for="sell-price">Prix de vente moyen (€/t)</label>
@@ -134,6 +137,43 @@
             <p>&copy; 2026 Béton Malin - Ali Maolida. Tous droits réservés.</p>
         </footer>
     </div>
+    <!-- Modal Calculateur GNR -->
+    <div id="gnr-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2><span class="icon">⛽</span> Calculateur Rendement GNR</h2>
+            <p class="modal-subtitle">Saisissez vos données de terrain pour obtenir votre conso au litre/tonne.</p>
+            
+            <div class="modal-form">
+                <div class="form-group">
+                    <label>Volume GNR consommé (Litres)</label>
+                    <input type="number" id="modal-gnr-liters" placeholder="ex: 450">
+                </div>
+                <div class="form-group">
+                    <label>Tonnage total produit (Tonnes)</label>
+                    <input type="number" id="modal-gnr-tonnes" placeholder="ex: 600">
+                </div>
+                <div class="form-group">
+                    <label>Heures de marche (Optionnel)</label>
+                    <input type="number" id="modal-gnr-hours" placeholder="ex: 8">
+                </div>
+                
+                <div class="modal-result" id="modal-gnr-result">
+                    <div class="res-item">
+                        <label>Consommation</label>
+                        <span id="res-l-t">0.00 L/t</span>
+                    </div>
+                    <div class="res-item">
+                        <label>Rendement Horaire</label>
+                        <span id="res-t-h">0.00 t/h</span>
+                    </div>
+                </div>
+
+                <button type="button" id="apply-gnr-calc" class="btn-primary">Appliquer au tableau de bord</button>
+            </div>
+        </div>
+    </div>
+
     <script src="app.js"></script>
 </body>
 </html>
