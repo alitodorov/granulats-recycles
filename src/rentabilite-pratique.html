@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fiche Rentabilité Pratique — EcoGranulat Opti</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* ─── TOKENS ─────────────────────────────────────────────── */
+    :root {
+      --navy:    #0d1f3c;
+      --navy-md: #1a3558;
+      --gold:    #c9972a;
+      --gold-lt: #f0c96b;
+      --cream:   #faf8f3;
+      --paper:   #ffffff;
+      --border:  #e2ddd4;
+      --muted:   #7a7267;
+      --text:    #1c1a18;
+      --success: #1a6e46;
+      --danger:  #b92828;
+      --accent:  #2563b0;
+    }
+
+    /* ─── RESET ──────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ─── BASE ───────────────────────────────────────────────── */
+    body {
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 400;
+      background: var(--cream);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 32px 24px 60px;
+    }
+
+    /* ─── SCREEN LAYOUT ──────────────────────────────────────── */
+    .page-wrap {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    /* ─── CONTROLS BAR (screen only) ─────────────────────────── */
+    .controls-bar {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+    .btn-print {
+      background: var(--navy);
+      color: #fff;
+      border: none;
+      padding: 11px 26px;
+      border-radius: 6px;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 600;
+      font-size: 0.88rem;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.2s;
+    }
+    .btn-print:hover { background: var(--navy-md); }
+    .btn-home {
+      background: transparent;
+      color: var(--navy);
+      border: 1px solid var(--navy);
+      padding: 11px 20px;
+      border-radius: 6px;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 600;
+      font-size: 0.88rem;
+      cursor: pointer;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.2s, color 0.2s;
+    }
+    .btn-home:hover { background: var(--navy); color: #fff; }
+    .btn-reset {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      padding: 11px 20px;
+      border-radius: 6px;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 500;
+      font-size: 0.88rem;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .btn-reset:hover { border-color: var(--navy); color: var(--navy); }
+
+    /* ─── REPORT CARD ─────────────────────────────────────────── */
+    .report {
+      background: var(--paper);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      box-shadow: 0 4px 32px rgba(13,31,60,0.08);
+      overflow: hidden;
+    }
+
+    /* ─── HEADER ─────────────────────────────────────────────── */
+    .report-header {
+      background: var(--navy);
+      padding: 40px 48px 32px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: end;
+      gap: 24px;
+    }
+    .report-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      color: #fff;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+    }
+    .report-subtitle {
+      color: var(--gold-lt);
+      font-size: 0.85rem;
+      font-weight: 400;
+      margin-top: 6px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .report-meta {
+      text-align: right;
+    }
+    .report-meta .logo-mark {
+      font-family: 'Playfair Display', serif;
+      color: var(--gold-lt);
+      font-size: 1.15rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+    .logo-img-wrap {
+      width: 60px;
+      height: 60px;
+      background: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+      padding: 6px;
+    }
+    .logo-img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    .logo-text { display: flex; flex-direction: column; text-align: right; }
+    .logo-highlight { color: #fff; font-size: 0.88rem; letter-spacing: 0.04em; }
+    .report-meta .meta-date {
+      color: rgba(255,255,255,0.5);
+      font-size: 0.78rem;
+      margin-top: 6px;
+    }
+    .gold-bar {
+      height: 4px;
+      background: linear-gradient(90deg, var(--gold) 0%, var(--gold-lt) 100%);
+    }
+
+    /* ─── CLIENT INFO BAND ────────────────────────────────────── */
+    .client-band {
+      background: #f5f3ee;
+      border-bottom: 1px solid var(--border);
+      padding: 20px 48px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+    .client-field label {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    .client-field input {
+      width: 100%;
+      border: none;
+      border-bottom: 1px solid var(--border);
+      background: transparent;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.92rem;
+      font-weight: 500;
+      color: var(--text);
+      padding: 4px 0;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .client-field input:focus { border-color: var(--gold); }
+
+    /* ─── BODY ───────────────────────────────────────────────── */
+    .report-body {
+      padding: 36px 48px;
+    }
+
+    /* ─── SECTION ─────────────────────────────────────────────── */
+    .section { margin-bottom: 36px; }
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.05rem;
+      color: var(--navy);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 18px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--navy);
+    }
+    .section-icon {
+      width: 28px;
+      height: 28px;
+      background: var(--navy);
+      color: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    /* ─── INPUT GRID ─────────────────────────────────────────── */
+    .input-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px 32px;
+    }
+    .input-grid.cols-3 {
+      grid-template-columns: repeat(3, 1fr);
+    }
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .field label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .field .input-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .field input[type="number"],
+    .field input[type="text"],
+    .field select {
+      width: 100%;
+      padding: 9px 44px 9px 12px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: #fafaf8;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.92rem;
+      font-weight: 500;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .field input:focus, .field select:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(201,151,42,0.12);
+      background: #fff;
+    }
+    .field .unit {
+      position: absolute;
+      right: 10px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+      pointer-events: none;
+    }
+    .field .hint {
+      font-size: 0.7rem;
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    /* ─── PRODUCT TABLE ──────────────────────────────────────── */
+    .product-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+    }
+    .product-table thead tr {
+      background: var(--navy);
+      color: #fff;
+    }
+    .product-table thead th {
+      padding: 10px 12px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 0.75rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .product-table thead th:not(:first-child) { text-align: right; }
+    .product-table tbody tr { border-bottom: 1px solid var(--border); }
+    .product-table tbody tr:nth-child(even) { background: #faf9f6; }
+    .product-table tbody td {
+      padding: 9px 12px;
+      font-weight: 400;
+    }
+    .product-table tbody td:not(:first-child) { text-align: right; }
+    .product-table tfoot tr { background: #f0ede6; border-top: 2px solid var(--gold); }
+    .product-table tfoot td {
+      padding: 10px 12px;
+      font-weight: 700;
+      text-align: right;
+    }
+    .product-table tfoot td:first-child { text-align: left; }
+    .product-table input[type="number"] {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 5px 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.875rem;
+      font-weight: 500;
+      background: #fff;
+      text-align: right;
+      outline: none;
+    }
+    .product-table input:focus { border-color: var(--gold); }
+
+    /* ─── RESULTS SECTION ─────────────────────────────────────── */
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .kpi-card {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 18px 16px;
+      background: #faf9f6;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--border);
+    }
+    .kpi-card.kpi-positive::before { background: var(--success); }
+    .kpi-card.kpi-negative::before { background: var(--danger); }
+    .kpi-card.kpi-info::before { background: var(--accent); }
+    .kpi-card.kpi-gold::before { background: var(--gold); }
+    .kpi-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .kpi-value {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--navy);
+      line-height: 1;
+    }
+    .kpi-value.positive { color: var(--success); }
+    .kpi-value.negative { color: var(--danger); }
+    .kpi-sub {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 5px;
+    }
+
+    /* ─── SYNTHESIS TABLE ─────────────────────────────────────── */
+    .synthesis-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+      margin-bottom: 24px;
+    }
+    .synthesis-table tr { border-bottom: 1px solid var(--border); }
+    .synthesis-table tr:last-child { border-bottom: none; }
+    .synthesis-table td {
+      padding: 10px 12px;
+    }
+    .synthesis-table .row-label {
+      color: var(--muted);
+      font-weight: 400;
+    }
+    .synthesis-table .row-value {
+      text-align: right;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .synthesis-table .row-total {
+      background: var(--navy);
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+    .synthesis-table .row-total .row-value { color: #fff; }
+    .synthesis-table .row-section td {
+      background: #f0ede6;
+      font-weight: 700;
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--navy);
+      padding: 7px 12px;
+    }
+
+    /* ─── SEUIL DE RENTABILITÉ ────────────────────────────────── */
+    .breakeven-box {
+      border: 2px solid var(--gold);
+      border-radius: 6px;
+      padding: 20px 24px;
+      background: linear-gradient(135deg, #fffdf7 0%, #fdf6e3 100%);
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 20px;
+      align-items: center;
+    }
+    .breakeven-item { text-align: center; }
+    .breakeven-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .breakeven-value {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      color: var(--gold);
+      font-weight: 700;
+    }
+    .breakeven-divider {
+      border-left: 1px solid var(--border);
+      height: 60px;
+      margin: 0 auto;
+    }
+
+    /* ─── CO2 BANNER ──────────────────────────────────────────── */
+    .co2-banner {
+      background: linear-gradient(135deg, #e8f5ee 0%, #d4eddf 100%);
+      border: 1px solid #a8d5bc;
+      border-radius: 6px;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .co2-icon { font-size: 1.8rem; }
+    .co2-text { flex: 1; }
+    .co2-text strong {
+      display: block;
+      color: var(--success);
+      font-weight: 700;
+      font-size: 1rem;
+    }
+    .co2-text span {
+      font-size: 0.8rem;
+      color: #3d7a57;
+    }
+    .co2-number {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      color: var(--success);
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .co2-unit {
+      font-size: 0.75rem;
+      color: #3d7a57;
+      text-align: right;
+    }
+
+    /* ─── SIGNATURE ───────────────────────────────────────────── */
+    .report-footer-band {
+      background: #f5f3ee;
+      border-top: 1px solid var(--border);
+      padding: 20px 48px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .footer-brand {
+      font-family: 'Playfair Display', serif;
+      color: var(--navy);
+      font-size: 0.95rem;
+    }
+    .footer-brand span { color: var(--gold); }
+    .footer-legal {
+      font-size: 0.72rem;
+      color: var(--muted);
+      text-align: right;
+    }
+
+    /* ─── OBSERVATIONS ────────────────────────────────────────── */
+    .obs-area {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: #fafaf8;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.875rem;
+      color: var(--text);
+      padding: 12px 14px;
+      resize: vertical;
+      min-height: 70px;
+      outline: none;
+    }
+    .obs-area:focus { border-color: var(--gold); }
+
+    /* ─── ALERT BADGE ─────────────────────────────────────────── */
+    .alert-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      margin-top: 6px;
+    }
+    .alert-badge.danger { background: #fde8e8; color: var(--danger); }
+    .alert-badge.success { background: #e8f5ee; color: var(--success); }
+    .alert-badge.warning { background: #fef3e2; color: #9a6c00; }
+
+    .history-item.selected { border-color: var(--gold) !important; background: #fffdf7 !important; }
+
+    /* ─── PRINT STYLES ────────────────────────────────────────── */
+    @media print {
+      #toast, #compare-bar-p, #compare-panel-p, #history-list-p { display: none !important; }
+      body {
+        background: #fff !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      .controls-bar { display: none !important; }
+      .page-wrap { max-width: 100% !important; }
+      .report {
+        box-shadow: none !important;
+        border: none !important;
+      }
+      .field input, .field select,
+      .client-field input,
+      .product-table input,
+      .obs-area {
+        border-color: transparent !important;
+        background: transparent !important;
+        box-shadow: none !important;
+      }
+      .report-body { padding: 28px 40px; }
+      .results-grid { break-inside: avoid; }
+      .breakeven-box { break-inside: avoid; }
+      .section { break-inside: avoid; }
+      .report-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .gold-bar { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+
+    @page {
+      size: A4;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-wrap">
+
+  <!-- ── CONTROLS (screen only) ───────────────────────────── -->
+  <div class="controls-bar">
+    <a href="index.html" class="btn-home">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Accueil
+    </a>
+    <button class="btn-reset" onclick="resetForm()">↺ Réinitialiser</button>
+    <button class="btn-print" onclick="window.print()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      Exporter en PDF
+    </button>
+    <button class="btn-print" onclick="savePratique()" style="background:var(--success);">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      Sauvegarder
+    </button>
+  </div>
+
+  <!-- ── REPORT ─────────────────────────────────────────────── -->
+  <div class="report">
+
+    <!-- Header -->
+    <div class="report-header">
+      <div>
+        <div class="report-title">Analyse de Rentabilité<br>Pratique</div>
+        <div class="report-subtitle">Granulats Recyclés — Données Terrain Réelles</div>
+      </div>
+      <div class="report-meta">
+        <div class="logo-mark">
+          <div class="logo-text">
+            EcoGranulat <span class="logo-highlight">Opti</span>
+            <span style="font-size:0.7rem;color:rgba(255,255,255,0.4);letter-spacing:0.08em;">by Béton Malin</span>
+          </div>
+          <div class="logo-img-wrap">
+            <img src="apple-touch-icon.png" alt="Béton Malin" class="logo-img">
+          </div>
+        </div>
+        <div class="meta-date" id="report-date"></div>
+      </div>
+    </div>
+    <div class="gold-bar"></div>
+
+    <!-- Client info -->
+    <div class="client-band">
+      <div class="client-field">
+        <label>Entreprise / Exploitant</label>
+        <input type="text" id="client-name" placeholder="Nom de l'entreprise">
+      </div>
+      <div class="client-field">
+        <label>Période analysée</label>
+        <input type="text" id="client-period" placeholder="ex : Semaine 18 — Mai 2026">
+      </div>
+      <div class="client-field">
+        <label>Site / Chantier</label>
+        <input type="text" id="client-site" placeholder="Lieu ou référence chantier">
+      </div>
+    </div>
+
+    <div class="report-body">
+
+      <!-- ── 1. DONNÉES TERRAIN ────────────────────────────── -->
+      <div class="section">
+        <div class="section-title">
+          <div class="section-icon">1</div>
+          Données Terrain — Approvisionnement
+        </div>
+        <div class="input-grid">
+          <div class="field">
+            <label>Tonnes de déblais reçus</label>
+            <div class="input-wrap">
+              <input type="number" id="t-input" value="500" min="0" oninput="calculate()">
+              <span class="unit">t</span>
+            </div>
+            <span class="hint">Pesée amont — total déblais entrants</span>
+          </div>
+          <div class="field">
+            <label>Redevance réception</label>
+            <div class="input-wrap">
+              <input type="number" id="redevance" value="10" step="0.5" min="0" oninput="calculate()">
+              <span class="unit">€/t</span>
+            </div>
+            <span class="hint">Encaissé par tonne de déblai reçu</span>
+          </div>
+          <div class="field">
+            <label>Distance transport amont</label>
+            <div class="input-wrap">
+              <input type="number" id="distance" value="20" min="0" oninput="calculate()">
+              <span class="unit">km</span>
+            </div>
+          </div>
+          <div class="field">
+            <label>Coût transport amont</label>
+            <div class="input-wrap">
+              <input type="number" id="transport-cost" value="0" step="0.5" min="0" oninput="calculate()">
+              <span class="unit">€/t</span>
+            </div>
+            <span class="hint">0 si payé par le client apporteur</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── 2. PRODUCTION RÉELLE ─────────────────────────── -->
+      <div class="section">
+        <div class="section-title">
+          <div class="section-icon">2</div>
+          Production Réelle — Sortie Concasseur
+        </div>
+        <div class="input-grid cols-3" style="margin-bottom:20px;">
+          <div class="field">
+            <label>Heures de marche machine</label>
+            <div class="input-wrap">
+              <input type="number" id="hours" value="8" step="0.5" min="0" oninput="calculate()">
+              <span class="unit">h</span>
+            </div>
+          </div>
+          <div class="field">
+            <label>Consommation GNR totale</label>
+            <div class="input-wrap">
+              <input type="number" id="gnr-total" value="400" min="0" oninput="calculate()">
+              <span class="unit">L</span>
+            </div>
+          </div>
+          <div class="field">
+            <label>Prix GNR</label>
+            <div class="input-wrap">
+              <input type="number" id="gnr-price" value="1.10" step="0.01" min="0" oninput="calculate()">
+              <span class="unit">€/L</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tableau produits -->
+        <table class="product-table">
+          <thead>
+            <tr>
+              <th>Produit</th>
+              <th>Tonnes produites</th>
+              <th>Tonnes vendues</th>
+              <th>Prix vente (€/t)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>GNR 0/31,5</td>
+              <td><input type="number" id="p1-prod" value="180" min="0" oninput="calculate()"></td>
+              <td><input type="number" id="p1-sold" value="160" min="0" oninput="calculate()"></td>
+              <td><input type="number" id="p1-price" value="18" step="0.5" min="0" oninput="calculate()"></td>
+            </tr>
+            <tr>
+              <td>GNR 0/63</td>
+              <td><input type="number" id="p2-prod" value="120" min="0" oninput="calculate()"></td>
+              <td><input type="number" id="p2-sold" value="110" min="0" oninput="calculate()"></td>
+              <td><input type="number" id="p2-price" value="14" step="0.5" min="0" oninput="calculate()"></td>
+            </tr>
+            <tr>
+              <td>Graves 0/80</td>
+              <td><input type="number" id="p3-prod" value="80" min="0" oninput="calculate()"></td>
+              <td><input type="number" id="p3-sold" value="70" min="0" oninput="calculate()"></td>
+              <td><input type="number" id="p3-price" value="10" step="0.5" min="0" oninput="calculate()"></td>
+            </tr>
+            <tr>
+              <td>Refus / Non valorisé</td>
+              <td><input type="number" id="p4-prod" value="40" min="0" oninput="calculate()"></td>
+              <td><input type="number" id="p4-sold" value="0" min="0" oninput="calculate()"></td>
+              <td><input type="number" id="p4-price" value="0" min="0" oninput="calculate()"></td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td>TOTAL</td>
+              <td id="total-prod">— t</td>
+              <td id="total-sold">— t</td>
+              <td>—</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <!-- ── 3. CHARGES RÉELLES ────────────────────────────── -->
+      <div class="section">
+        <div class="section-title">
+          <div class="section-icon">3</div>
+          Charges Réelles de la Période
+        </div>
+        <div class="input-grid">
+          <div class="field">
+            <label>Main d'œuvre (conducteur + aide)</label>
+            <div class="input-wrap">
+              <input type="number" id="labor" value="600" min="0" oninput="calculate()">
+              <span class="unit">€</span>
+            </div>
+          </div>
+          <div class="field">
+            <label>Location / Amortissement machine</label>
+            <div class="input-wrap">
+              <input type="number" id="machine" value="350" min="0" oninput="calculate()">
+              <span class="unit">€</span>
+            </div>
+          </div>
+          <div class="field">
+            <label>Entretien / Pièces d'usure</label>
+            <div class="input-wrap">
+              <input type="number" id="maintenance" value="150" min="0" oninput="calculate()">
+              <span class="unit">€</span>
+            </div>
+          </div>
+          <div class="field">
+            <label>Autres charges (assurance, admin…)</label>
+            <div class="input-wrap">
+              <input type="number" id="other-charges" value="100" min="0" oninput="calculate()">
+              <span class="unit">€</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── 4. RÉSULTATS ──────────────────────────────────── -->
+      <div class="section">
+        <div class="section-title">
+          <div class="section-icon">4</div>
+          Résultats — Synthèse Financière
+        </div>
+
+        <div class="results-grid">
+          <div class="kpi-card kpi-info">
+            <div class="kpi-label">CA Total</div>
+            <div class="kpi-value" id="kpi-ca">—</div>
+            <div class="kpi-sub">Ventes + Redevances</div>
+          </div>
+          <div class="kpi-card kpi-positive">
+            <div class="kpi-label">Coût de revient</div>
+            <div class="kpi-value" id="kpi-cout">—</div>
+            <div class="kpi-sub" id="kpi-cout-t">par tonne produite</div>
+          </div>
+          <div class="kpi-card kpi-gold">
+            <div class="kpi-label">Marge Brute</div>
+            <div class="kpi-value" id="kpi-marge">—</div>
+            <div class="kpi-sub" id="kpi-marge-pct">% du CA</div>
+          </div>
+          <div class="kpi-card kpi-info">
+            <div class="kpi-label">Rendement Matière</div>
+            <div class="kpi-value" id="kpi-yield">—</div>
+            <div class="kpi-sub">t produites / t reçues</div>
+          </div>
+        </div>
+
+        <!-- Synthèse détaillée -->
+        <table class="synthesis-table">
+          <tr class="row-section"><td colspan="2">Produits (Recettes)</td></tr>
+          <tr>
+            <td class="row-label">Redevances réception (déblais encaissés)</td>
+            <td class="row-value" id="syn-redevance">—</td>
+          </tr>
+          <tr>
+            <td class="row-label">Ventes de granulats recyclés</td>
+            <td class="row-value" id="syn-ventes">—</td>
+          </tr>
+          <tr class="row-section"><td colspan="2">Charges Opérationnelles</td></tr>
+          <tr>
+            <td class="row-label">Carburant GNR</td>
+            <td class="row-value" id="syn-gnr">—</td>
+          </tr>
+          <tr>
+            <td class="row-label">Transport amont</td>
+            <td class="row-value" id="syn-transport">—</td>
+          </tr>
+          <tr>
+            <td class="row-label">Main d'œuvre</td>
+            <td class="row-value" id="syn-labor">—</td>
+          </tr>
+          <tr>
+            <td class="row-label">Machine (location/amortissement)</td>
+            <td class="row-value" id="syn-machine">—</td>
+          </tr>
+          <tr>
+            <td class="row-label">Entretien / Usure</td>
+            <td class="row-value" id="syn-maint">—</td>
+          </tr>
+          <tr>
+            <td class="row-label">Autres charges</td>
+            <td class="row-value" id="syn-other">—</td>
+          </tr>
+          <tr>
+            <td class="row-label">Total charges</td>
+            <td class="row-value" id="syn-total-charges">—</td>
+          </tr>
+          <tr class="row-total">
+            <td>RÉSULTAT NET DE LA PÉRIODE</td>
+            <td class="row-value" id="syn-result">—</td>
+          </tr>
+        </table>
+
+        <!-- Seuil de rentabilité -->
+        <div class="breakeven-box">
+          <div class="breakeven-item">
+            <div class="breakeven-label">Seuil de rentabilité</div>
+            <div class="breakeven-value" id="be-tonnes">— t</div>
+            <div style="font-size:0.72rem;color:var(--muted);margin-top:4px;">à vendre / période</div>
+          </div>
+          <div class="breakeven-divider"></div>
+          <div class="breakeven-item">
+            <div class="breakeven-label">Conso GNR réelle</div>
+            <div class="breakeven-value" id="be-gnr">— L/t</div>
+            <div style="font-size:0.72rem;color:var(--muted);margin-top:4px;">vs objectif ≤ 0.9 L/t</div>
+            <div id="be-gnr-badge"></div>
+          </div>
+          <div class="breakeven-divider"></div>
+          <div class="breakeven-item">
+            <div class="breakeven-label">Rendement horaire</div>
+            <div class="breakeven-value" id="be-throughput">— t/h</div>
+            <div style="font-size:0.72rem;color:var(--muted);margin-top:4px;">production effective</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── 5. CO2 ÉCONOMISÉ ──────────────────────────────── -->
+      <div class="section">
+        <div class="section-title">
+          <div class="section-icon">5</div>
+          Impact Environnemental
+        </div>
+        <div class="co2-banner">
+          <div class="co2-icon">🌱</div>
+          <div class="co2-text">
+            <strong>CO₂ évité vs granulats naturels</strong>
+            <span>Calcul ADEME — transport 100 km naturel vs réel recyclé</span>
+          </div>
+          <div>
+            <div class="co2-number" id="co2-saved">— kg</div>
+            <div class="co2-unit">CO₂eq économisés</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── 6. OBSERVATIONS ──────────────────────────────── -->
+      <div class="section">
+        <div class="section-title">
+          <div class="section-icon">6</div>
+          Observations & Recommandations
+        </div>
+        <textarea class="obs-area" id="observations" placeholder="Saisir vos observations terrain, anomalies, axes d'amélioration identifiés…"></textarea>
+      </div>
+
+      <!-- ── 7. HISTORIQUE ─────────────────────────────────── -->
+      <div class="section">
+        <div class="section-title">
+          <div class="section-icon">7</div>
+          Historique & Archives
+        </div>
+        <div id="compare-bar-p" style="display:none;margin-bottom:15px;text-align:center;">
+          <button onclick="showCompareP()" style="background:var(--navy);color:#fff;border:none;padding:10px 20px;border-radius:6px;font-weight:600;cursor:pointer;">⚖️ Comparer les 2 sélections</button>
+        </div>
+        <div id="history-list-p" style="display:grid;gap:10px;">
+          <p style="text-align:center;color:var(--muted);font-style:italic;padding:20px;">Aucune simulation enregistrée.</p>
+        </div>
+        <div id="compare-panel-p" style="display:none;margin-top:20px;padding:20px;background:#f5f3ee;border-radius:6px;border:1px solid var(--border);"></div>
+      </div>
+
+    </div><!-- /report-body -->
+
+    <!-- Footer -->
+    <div class="report-footer-band">
+      <div class="footer-brand">
+        EcoGranulat <span>Opti</span> — Béton Malin
+      </div>
+      <div class="footer-legal">
+        Document confidentiel · Généré le <span id="footer-date"></span><br>
+        Ali Maolida · alimaolida@betonmalin.fr
+      </div>
+    </div>
+
+  </div><!-- /report -->
+</div><!-- /page-wrap -->
+
+<script>
+  // ── DATE ──────────────────────────────────────────────────
+  const now = new Date();
+  const fmt = now.toLocaleDateString('fr-FR', { day:'2-digit', month:'long', year:'numeric' });
+  document.getElementById('report-date').textContent = fmt;
+  document.getElementById('footer-date').textContent = fmt;
+
+  // ── CONSTANTES ADEME ──────────────────────────────────────
+  const CO2_GNR_L = 3.16;       // kg CO2eq / litre
+  const CO2_TRANSPORT_KMT = 0.11; // kg CO2eq / km.tonne
+
+  const f = (id) => parseFloat(document.getElementById(id).value) || 0;
+
+  function calculate() {
+    // Entrées
+    const tIn        = f('t-input');
+    const redevance  = f('redevance');
+    const distance   = f('distance');
+    const transpCost = f('transport-cost');
+    const hours      = f('hours');
+    const gnrTotal   = f('gnr-total');
+    const gnrPrice   = f('gnr-price');
+
+    // Produits
+    const products = [
+      { prod: f('p1-prod'), sold: f('p1-sold'), price: f('p1-price') },
+      { prod: f('p2-prod'), sold: f('p2-sold'), price: f('p2-price') },
+      { prod: f('p3-prod'), sold: f('p3-sold'), price: f('p3-price') },
+      { prod: f('p4-prod'), sold: f('p4-sold'), price: f('p4-price') },
+    ];
+
+    const totalProd = products.reduce((s, p) => s + p.prod, 0);
+    const totalSold = products.reduce((s, p) => s + p.sold, 0);
+    const ventes    = products.reduce((s, p) => s + p.sold * p.price, 0);
+
+    document.getElementById('total-prod').textContent = totalProd.toFixed(0) + ' t';
+    document.getElementById('total-sold').textContent = totalSold.toFixed(0) + ' t';
+
+    // Charges
+    const labor     = f('labor');
+    const machine   = f('machine');
+    const maint     = f('maintenance');
+    const other     = f('other-charges');
+
+    const gnrCost     = gnrTotal * gnrPrice;
+    const transportT  = tIn * transpCost;
+    const totalCharges = gnrCost + transportT + labor + machine + maint + other;
+
+    // Recettes
+    const revRedev = tIn * redevance;
+    const totalCA  = revRedev + ventes;
+
+    // Résultats
+    const margeNette = totalCA - totalCharges;
+    const coutRevient = totalProd > 0 ? totalCharges / totalProd : 0;
+    const margePct    = totalCA > 0 ? (margeNette / totalCA) * 100 : 0;
+    const yieldMat    = tIn > 0 ? (totalProd / tIn) * 100 : 0;
+    const gnrLT       = totalProd > 0 ? gnrTotal / totalProd : 0;
+    const throughput  = hours > 0 ? totalProd / hours : 0;
+
+    // Seuil de rentabilité (tonnes à vendre pour couvrir les charges fixes)
+    const avgPrice = totalSold > 0 ? ventes / totalSold : 0;
+    const fixedCosts = totalCharges - gnrCost - transportT;
+    const varCostT = totalProd > 0 ? (gnrCost + transportT) / totalProd : 0;
+    const beVolume = (avgPrice - varCostT) > 0
+      ? (fixedCosts - revRedev) / (avgPrice - varCostT)
+      : 0;
+
+    // CO2
+    const co2Natural   = 100 * CO2_TRANSPORT_KMT * totalSold;
+    const co2Real      = distance * CO2_TRANSPORT_KMT * totalSold + gnrTotal * CO2_GNR_L;
+    const co2Saved     = Math.max(0, co2Natural - co2Real);
+
+    // ── AFFICHAGE KPI ──────────────────────────────────────
+    const euro = (v) => v.toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + ' €';
+    const euroT = (v) => v.toFixed(2) + ' €/t';
+
+    const kpiMarge = document.getElementById('kpi-marge');
+    kpiMarge.textContent = euro(margeNette);
+    kpiMarge.className   = 'kpi-value ' + (margeNette >= 0 ? 'positive' : 'negative');
+    document.getElementById('kpi-marge-pct').textContent = margePct.toFixed(1) + '% du CA';
+
+    document.getElementById('kpi-ca').textContent   = euro(totalCA);
+    document.getElementById('kpi-cout').textContent = euroT(coutRevient);
+    document.getElementById('kpi-cout-t').textContent = 'sur ' + totalProd.toFixed(0) + ' t produites';
+    document.getElementById('kpi-yield').textContent = yieldMat.toFixed(1) + '%';
+
+    // ── SYNTHÈSE ───────────────────────────────────────────
+    const s = document.getElementById.bind(document);
+    s('syn-redevance').textContent   = euro(revRedev);
+    s('syn-ventes').textContent      = euro(ventes);
+    s('syn-gnr').textContent         = '− ' + euro(gnrCost);
+    s('syn-transport').textContent   = '− ' + euro(transportT);
+    s('syn-labor').textContent       = '− ' + euro(labor);
+    s('syn-machine').textContent     = '− ' + euro(machine);
+    s('syn-maint').textContent       = '− ' + euro(maint);
+    s('syn-other').textContent       = '− ' + euro(other);
+    s('syn-total-charges').textContent = '− ' + euro(totalCharges);
+
+    const synResult = s('syn-result');
+    synResult.textContent = euro(margeNette);
+    synResult.style.color = margeNette >= 0 ? '#86efb0' : '#fca5a5';
+
+    // ── SEUIL ─────────────────────────────────────────────
+    s('be-tonnes').textContent    = beVolume > 0 ? Math.ceil(beVolume) + ' t' : '— t';
+    s('be-gnr').textContent       = gnrLT.toFixed(2) + ' L/t';
+    s('be-throughput').textContent = throughput.toFixed(1) + ' t/h';
+
+    const gnrBadgeEl = s('be-gnr-badge');
+    if (gnrTotal > 0 && totalProd > 0) {
+      if (gnrLT > 0.9) {
+        gnrBadgeEl.innerHTML = '<span class="alert-badge danger">⚠ Dépassement seuil</span>';
+      } else if (gnrLT < 0.75) {
+        gnrBadgeEl.innerHTML = '<span class="alert-badge success">✓ Excellent rendement</span>';
+      } else {
+        gnrBadgeEl.innerHTML = '<span class="alert-badge warning">~ Dans la norme</span>';
+      }
+    } else {
+      gnrBadgeEl.innerHTML = '';
+    }
+
+    // ── CO2 ───────────────────────────────────────────────
+    s('co2-saved').textContent = co2Saved > 1000
+      ? (co2Saved / 1000).toFixed(1) + ' t'
+      : co2Saved.toFixed(0) + ' kg';
+  }
+
+  function resetForm() {
+    const defaults = {
+      't-input': 500, 'redevance': 10, 'distance': 20, 'transport-cost': 0,
+      'hours': 8, 'gnr-total': 400, 'gnr-price': 1.10,
+      'p1-prod': 180, 'p1-sold': 160, 'p1-price': 18,
+      'p2-prod': 120, 'p2-sold': 110, 'p2-price': 14,
+      'p3-prod': 80,  'p3-sold': 70,  'p3-price': 10,
+      'p4-prod': 40,  'p4-sold': 0,   'p4-price': 0,
+      'labor': 600, 'machine': 350, 'maintenance': 150, 'other-charges': 100,
+    };
+    for (const [id, val] of Object.entries(defaults)) {
+      document.getElementById(id).value = val;
+    }
+    document.getElementById('observations').value = '';
+    document.getElementById('client-name').value = '';
+    document.getElementById('client-period').value = '';
+    document.getElementById('client-site').value = '';
+    calculate();
+  }
+
+  // Init
+  calculate();
+</script>
+<div id="toast" style="position:fixed;bottom:30px;right:30px;background:#1a6e46;color:#fff;padding:14px 24px;border-radius:12px;font-size:0.9rem;font-weight:600;opacity:0;transform:translateY(20px);transition:all 0.3s;z-index:2000;pointer-events:none;"></div>
+<style>.toast.show{opacity:1!important;transform:translateY(0)!important;}.toast.error{background:#b92828!important;}</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+<script src="app-pratique.js"></script>
+</body>
+</html>

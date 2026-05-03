@@ -185,3 +185,134 @@ document.addEventListener('input', (e) => {
 
 // Initialisation
 updateCalculations();
+
+// ── SUPABASE PERSISTENCE ─────────────────────────────
+const TABLE = 'simulations_theoriques';
+
+function showToast(msg, isError = false) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = isError ? 'toast error show' : 'toast show';
+    setTimeout(() => t.className = 'toast', 3000);
+}
+
+function collectData() {
+    const buyPrice = parseFloat(document.getElementById('buy-price').value) || 0;
+    const transportDist = parseFloat(document.getElementById('transport-dist').value) || 0;
+    const energyCons = parseFloat(document.getElementById('energy-cons').value) || 0;
+    const sellPrice = parseFloat(document.getElementById('sell-price').value) || 0;
+    const exposureClass = document.getElementById('exposure-class').value;
+    const substitutionRate = parseFloat(document.getElementById('substitution-rate').value) || 0;
+
+    const energyCost = energyCons * 1.2;
+    const costPrice = (-buyPrice) + energyCost + 2;
+    const margin = sellPrice - costPrice;
+    const co2 = transportDist * EMISSIONS.TRANSPORT_KM_TONNE + energyCons * EMISSIONS.GN_LITRE;
+
+    return {
+        buy_price: buyPrice, transport_dist: transportDist, energy_cons: energyCons,
+        sell_price: sellPrice, exposure_class: exposureClass, substitution_rate: substitutionRate,
+        margin: parseFloat(margin.toFixed(2)), co2: parseFloat(co2.toFixed(2))
+    };
+}
+
+function loadDataIntoForm(row) {
+    document.getElementById('buy-price').value = row.buy_price ?? 10;
+    document.getElementById('transport-dist').value = row.transport_dist ?? 20;
+    document.getElementById('energy-cons').value = row.energy_cons ?? 0.8;
+    document.getElementById('sell-price').value = row.sell_price ?? 18;
+    document.getElementById('exposure-class').value = row.exposure_class ?? 'X0';
+    document.getElementById('substitution-rate').value = row.substitution_rate ?? 15;
+    document.getElementById('rate-display').innerText = row.substitution_rate ?? 15;
+    updateCalculations();
+}
+
+async function saveSimulation() {
+    const defaultName = 'Simulation ' + new Date().toLocaleString('fr-FR');
+    const name = prompt('Nom de la simulation :', defaultName);
+    if (!name) return;
+    const { error } = await supabase.from(TABLE).insert({ name, ...collectData() });
+    if (error) { showToast('Erreur : ' + error.message, true); return; }
+    showToast('✓ Simulation sauvegardée');
+    loadHistory();
+}
+
+async function deleteSimulation(id) {
+    if (!confirm('Supprimer cette simulation ?')) return;
+    const { error } = await supabase.from(TABLE).delete().eq('id', id);
+    if (error) { showToast('Erreur : ' + error.message, true); return; }
+    showToast('Simulation supprimée');
+    loadHistory();
+}
+
+let selectedForCompare = [];
+
+function toggleCompare(id) {
+    const idx = selectedForCompare.indexOf(id);
+    if (idx > -1) selectedForCompare.splice(idx, 1);
+    else { if (selectedForCompare.length >= 2) selectedForCompare.shift(); selectedForCompare.push(id); }
+    document.querySelectorAll('.history-item').forEach(el => {
+        el.classList.toggle('selected', selectedForCompare.includes(el.dataset.id));
+    });
+    document.getElementById('compare-bar').style.display = selectedForCompare.length === 2 ? 'block' : 'none';
+}
+
+async function showCompare() {
+    if (selectedForCompare.length !== 2) return;
+    const { data } = await supabase.from(TABLE).select('*').in('id', selectedForCompare);
+    if (!data || data.length !== 2) return;
+    const [a, b] = data;
+    const rows = [
+        ['Nom', a.name, b.name],
+        ['Date', new Date(a.created_at).toLocaleDateString('fr-FR'), new Date(b.created_at).toLocaleDateString('fr-FR')],
+        ['Marge nette', a.margin, b.margin, '€/t', 'higher'],
+        ['Impact CO2', a.co2, b.co2, 'kg/t', 'lower'],
+        ['Redevance', a.buy_price, b.buy_price, '€/t', 'higher'],
+        ['Prix vente', a.sell_price, b.sell_price, '€/t', 'higher'],
+        ['Conso GNR', a.energy_cons, b.energy_cons, 'L/t', 'lower'],
+    ];
+    let html = '<table><tr><th>Indicateur</th><th>' + a.name + '</th><th>' + b.name + '</th></tr>';
+    rows.forEach(([label, va, vb, unit, dir]) => {
+        let ca = '', cb = '';
+        if (dir && typeof va === 'number') {
+            ca = (dir === 'higher' ? va > vb : va < vb) ? 'compare-better' : (va === vb ? '' : 'compare-worse');
+            cb = (dir === 'higher' ? vb > va : vb < va) ? 'compare-better' : (va === vb ? '' : 'compare-worse');
+            va = va.toFixed(2) + ' ' + unit; vb = vb.toFixed(2) + ' ' + unit;
+        }
+        html += '<tr><td>' + label + '</td><td class="' + ca + '">' + va + '</td><td class="' + cb + '">' + vb + '</td></tr>';
+    });
+    html += '</table>';
+    const panel = document.getElementById('compare-panel');
+    panel.innerHTML = html; panel.style.display = 'block';
+}
+
+async function loadHistory() {
+    const { data, error } = await supabase.from(TABLE).select('*').order('created_at', { ascending: false });
+    const list = document.getElementById('history-list');
+    if (error || !data || data.length === 0) {
+        list.innerHTML = '<p class="empty-state">Aucune simulation enregistrée pour le moment.</p>';
+        return;
+    }
+    list.innerHTML = data.map(row => {
+        const date = new Date(row.created_at).toLocaleDateString('fr-FR', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+        const marginStyle = (row.margin ?? 0) >= 0 ? 'color:var(--success)' : 'color:var(--danger)';
+        return `<div class="history-item" data-id="${row.id}" onclick="toggleCompare('${row.id}')">
+            <div class="history-info"><span class="history-name">${row.name}</span><span class="history-date">${date}</span></div>
+            <span style="font-weight:700;${marginStyle}">${(row.margin ?? 0).toFixed(2)} €/t</span>
+            <div class="history-actions">
+                <button class="btn-icon" title="Recharger" onclick="event.stopPropagation();loadSim('${row.id}')">↻</button>
+                <button class="btn-icon delete" title="Supprimer" onclick="event.stopPropagation();deleteSimulation('${row.id}')">🗑</button>
+            </div></div>`;
+    }).join('');
+}
+
+async function loadSim(id) {
+    const { data, error } = await supabase.from(TABLE).select('*').eq('id', id).single();
+    if (error || !data) { showToast('Erreur chargement', true); return; }
+    loadDataIntoForm(data);
+    showToast('✓ Simulation chargée : ' + data.name);
+}
+
+document.getElementById('save-simulation').addEventListener('click', saveSimulation);
+document.getElementById('btn-compare').addEventListener('click', showCompare);
+loadHistory();
