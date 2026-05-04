@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EcoGranulat Opti | Rentabilité & CO2</title>
+    <title>EcoGranulat Opti | Rentabilité & Empreinte Carbone GR</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 </head>
@@ -50,6 +50,10 @@
                             <label for="sell-price">Prix de vente moyen (€/t)</label>
                             <input type="number" id="sell-price" value="18" step="0.5">
                         </div>
+                        <div class="form-group">
+                            <label for="total-tonnage-input">Tonnage cumulé mâchoires (t)</label>
+                            <input type="number" id="total-tonnage-input" value="12450" step="50">
+                        </div>
                         <div class="form-actions">
                             <button type="button" id="save-simulation" class="btn-primary">💾 Sauvegarder</button>
                             <button type="button" onclick="window.print()" class="btn-secondary">📄 Rapport PDF</button>
@@ -76,9 +80,127 @@
                             <div class="value" id="co2-value">0.00 kg/t</div>
                         </div>
                     </div>
+                    <div id="breakdown" class="breakdown-detail"></div>
                     <div class="chef-tip" id="chef-tip">
                         <span class="tip-icon">👨🏾‍🍳</span>
                         <p id="tip-text">Prêt à optimiser votre mélange ?</p>
+                    </div>
+                </div>
+
+                <!-- Mon Empreinte GR — CO2 production -->
+                <div class="card empreinte-gr-card">
+                    <h2><span class="icon">♻️</span> Mon Empreinte GR</h2>
+                    <p class="card-subtitle">Calculez le CO₂ réel de votre production de Granulats Recyclés (par session de concassage).</p>
+
+                    <div class="empreinte-inputs">
+                        <div class="form-group">
+                            <label for="gr-prod-input">Intrant reçu (t béton/gravats)</label>
+                            <input type="number" id="gr-prod-input" value="500" step="10" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="gr-prod-fuel">Gasoil concasseur/cribleur (L)</label>
+                            <input type="number" id="gr-prod-fuel" value="200" step="5" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="gr-prod-dist">Distance transport intrant (km)</label>
+                            <input type="number" id="gr-prod-dist" value="20" step="1" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="gr-prod-kwh">Électricité consommée (kWh, optionnel)</label>
+                            <input type="number" id="gr-prod-kwh" value="0" step="10" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="gr-prod-output">GR produit en sortie (t)</label>
+                            <input type="number" id="gr-prod-output" value="420" step="10" min="0">
+                        </div>
+                    </div>
+
+                    <div class="empreinte-results">
+                        <div class="empreinte-stat">
+                            <label>CO₂ machines</label>
+                            <span id="gr-co2-machines">—</span>
+                            <small>kg CO₂</small>
+                        </div>
+                        <div class="empreinte-stat">
+                            <label>CO₂ transport</label>
+                            <span id="gr-co2-transport">—</span>
+                            <small>kg CO₂</small>
+                        </div>
+                        <div class="empreinte-stat empreinte-stat--total">
+                            <label>CO₂ total</label>
+                            <span id="gr-co2-total">—</span>
+                            <small>kg CO₂</small>
+                        </div>
+                        <div class="empreinte-stat empreinte-stat--per-tonne">
+                            <label>Votre GR</label>
+                            <span id="gr-co2-per-tonne">—</span>
+                            <small>kg CO₂ / t GR</small>
+                        </div>
+                    </div>
+
+                    <div class="empreinte-ademe">
+                        <span id="gr-ademe-badge" class="gr-badge">Réf. ADEME : 1.5 kg CO₂/t</span>
+                    </div>
+
+                    <button type="button" id="gr-apply-marmite" class="btn-apply-marmite">
+                        👨🏾‍🍳 Utiliser ce chiffre dans la Marmite
+                    </button>
+                </div>
+
+                <!-- La Marmite du Cuistot — Mix-Design Carbone -->
+                <div class="card marmite-card">
+                    <h2><span class="icon">👨🏾‍🍳</span> La Marmite du Cuistot</h2>
+                    <p class="card-subtitle">Composez votre béton et visualisez l'impact carbone en direct (base : 1 m³ C25/30).</p>
+
+                    <div class="form-group">
+                        <label for="marmite-class">Classe d'exposition (NF EN 206)</label>
+                        <select id="marmite-class">
+                            <option value="X0">X0 — Pas de risque (gros béton)</option>
+                            <option value="XC1" selected>XC1 — Intérieur sec (dalles, poutres)</option>
+                            <option value="XC2">XC2 — Humide (fondations)</option>
+                            <option value="XC3">XC3/4 — Extérieur (voiles, façades)</option>
+                            <option value="XF1">XF1 — Gel modéré (trottoirs)</option>
+                            <option value="XA1">XA1 — Attaque chimique (interdit GR)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="marmite-gr-rate">
+                            Part de Granulat Recyclé (GR)
+                            <span class="limit-badge">Limite NF EN 206 : <strong id="marmite-limit">30</strong>%</span>
+                        </label>
+                        <input type="range" id="marmite-gr-rate" min="0" max="30" value="15">
+                        <div class="range-value"><span id="marmite-gr-display">15</span> %</div>
+                    </div>
+
+                    <div class="marmite-gauge-wrap">
+                        <div class="marmite-gauge-bar">
+                            <div id="marmite-gauge-fill" class="marmite-gauge-fill" style="width:15%"></div>
+                        </div>
+                        <span class="gauge-label">Économie CO₂</span>
+                    </div>
+
+                    <div class="marmite-results">
+                        <div class="marmite-stat">
+                            <label>Béton 100% naturel</label>
+                            <span id="marmite-co2-natural">—</span>
+                            <small>kg CO₂/m³</small>
+                        </div>
+                        <div class="marmite-stat marmite-stat--gr">
+                            <label>Béton avec GR</label>
+                            <span id="marmite-co2-mix">—</span>
+                            <small>kg CO₂/m³</small>
+                        </div>
+                        <div class="marmite-stat marmite-stat--saved">
+                            <label>CO₂ économisé</label>
+                            <span id="marmite-co2-saved">—</span>
+                            <small>kg/m³ (<span id="marmite-pct-saved">0</span>%)</small>
+                        </div>
+                    </div>
+
+                    <div class="marmite-tip-box">
+                        <span>🏾</span>
+                        <p id="marmite-tip">Ajustez la recette pour voir l'impact.</p>
                     </div>
                 </div>
 
@@ -110,7 +232,6 @@
                         </div>
                     </div>
                 </div>
-            </section>
 
                 <!-- Performance & Maintenance (Phase 3) -->
                 <div class="card maintenance-card">
@@ -120,10 +241,13 @@
                             <label>Tonnage Cumulé</label>
                             <span id="total-tonnage">12,450 t</span>
                         </div>
-                        <div class="stat-mini">
-                            <label>Usure Mâchoires</label>
-                            <div class="progress-bar"><div class="progress" style="width: 65%;"></div></div>
-                            <span class="progress-text">65%</span>
+                        <div class="stat-mini" id="jaw-wear-container">
+                            <label>Usure Mâchoires <span id="edit-lifespan" title="Modifier la durée de vie" style="cursor:pointer;float:right;transition:transform 0.2s;">⚙️</span></label>
+                            <div class="progress-bar"><div class="progress" id="jaw-wear-progress" style="width: 65%;"></div></div>
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <span class="progress-text" id="jaw-wear-text">65%</span>
+                                <small id="lifespan-display" style="color:var(--text-muted);font-size:0.7rem;">Max: 20 000 t</small>
+                            </div>
                         </div>
                         <div class="stat-mini warning">
                             <label>Rendement GNR</label>

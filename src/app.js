@@ -1,9 +1,29 @@
 // Constantes d'émissions CO2 (Source : Base Carbone ADEME / Moyennes BTP)
 const EMISSIONS = {
-    GN_LITRE: 3.16, // kg CO2eq / litre de GNR
+    GN_LITRE: 3.16, // kg CO2eq / litre de Gasoil Non Routier (carburant machines)
     TRANSPORT_KM_TONNE: 0.11, // kg CO2eq / km.tonne (Camion 26t)
     ELEC_KWH: 0.06 // kg CO2eq / kWh (Mix France)
 };
+
+// Facteurs d'émission CO2 constituants béton (kg CO2eq/kg) — Base Carbone ADEME / CERIB
+const MIX_CO2 = {
+    ciment:   0.620,  // CEM II/A (Portland composé)
+    sable:    0.0045, // Sable naturel 0/4
+    gravillon: 0.0038, // Gravillon naturel 4/20
+    gr:       0.0015, // Granulat Recyclé (GR) — concassage + transport inclus
+    eau:      0.0003  // Eau efficace
+};
+
+// Limites de substitution Granulat Recyclé par classe d'exposition (NF EN 206 + FD P18-011)
+const MIX_LIMITS = {
+    'X0': 100, 'XC1': 30, 'XC2': 30, 'XC3': 20, 'XF1': 20, 'XA1': 0
+};
+
+// Paramètres de la machine
+const MACHINE_STATS = {
+    JAW_ALERT_PERCENT: 85       // Seuil d'alerte en pourcentage
+};
+let currentLifespan = 20000; // Modifiable via l'interface
 
 const LEVEL_NAMES = [
     "Apprenti Recycleur 🏗️",
@@ -21,6 +41,7 @@ const updateCalculations = () => {
     
     const energyCons = parseFloat(document.getElementById('energy-cons').value) || 0;
     const sellPrice = parseFloat(document.getElementById('sell-price').value) || 0;
+    const totalTonnage = parseFloat(document.getElementById('total-tonnage-input').value) || 0;
 
     // Récupération des valeurs Client (Phase 2)
     const subRate = parseFloat(document.getElementById('substitution-rate').value) || 0;
@@ -64,6 +85,24 @@ const updateCalculations = () => {
         document.getElementById('gnr-yield').innerText = `${energyCons.toFixed(2)} L/t`;
     }
 
+    // Logique Usure Mâchoires
+    const jawWearContainer = document.getElementById('jaw-wear-container');
+    if (jawWearContainer) {
+        const wearPercentage = Math.min(100, Math.round((totalTonnage / currentLifespan) * 100));
+        
+        document.getElementById('total-tonnage').innerText = `${totalTonnage.toLocaleString('fr-FR')} t`;
+        document.getElementById('jaw-wear-progress').style.width = `${wearPercentage}%`;
+        document.getElementById('jaw-wear-text').innerText = `${wearPercentage}%`;
+
+        if (wearPercentage >= MACHINE_STATS.JAW_ALERT_PERCENT) {
+            jawWearContainer.classList.add('warning');
+            document.getElementById('jaw-wear-progress').style.background = '#e74c3c'; // rouge alerte
+        } else {
+            jawWearContainer.classList.remove('warning');
+            document.getElementById('jaw-wear-progress').style.background = ''; // reset par défaut
+        }
+    }
+
     // 5. Gamification (Option E)
     updateGamification(margin, co2Saved, energyCons);
 
@@ -76,6 +115,15 @@ const updateCalculations = () => {
     }
 
     updateBreakdown(buyPrice, transportCost, energyCost);
+
+    // Tip dynamique du cuistot
+    const tipEl = document.getElementById('tip-text');
+    if (tipEl) {
+        if (margin < 0) tipEl.innerText = "Marge négative — ajustez le prix de vente ou réduisez les coûts.";
+        else if (margin > 10) tipEl.innerText = `Excellente marge à ${margin.toFixed(2)} €/t — votre recette est au point ! 🏾`;
+        else if (energyCons > 0.9) tipEl.innerText = "Conso gasoil élevée — vérifiez l'état des mâchoires.";
+        else tipEl.innerText = `Marge ${margin.toFixed(2)} €/t · CO₂ ${totalCO2.toFixed(1)} kg/t — continuez à optimiser.`;
+    }
 };
 
 const updateBreakdown = (buy, trans, energy) => {
@@ -183,8 +231,155 @@ document.addEventListener('input', (e) => {
     }
 });
 
+const editLifespanBtn = document.getElementById('edit-lifespan');
+if (editLifespanBtn) {
+    editLifespanBtn.addEventListener('click', () => {
+        const newLifespan = prompt("Entrez la durée de vie totale estimée des mâchoires (en tonnes) :", currentLifespan);
+        if (newLifespan && !isNaN(newLifespan) && parseFloat(newLifespan) > 0) {
+            currentLifespan = parseFloat(newLifespan);
+            document.getElementById('lifespan-display').innerText = `Max: ${currentLifespan.toLocaleString('fr-FR')} t`;
+            updateCalculations();
+        }
+    });
+}
+
+// ── MARMITE DU CUISTOT — Mix-Design Carbone ──────────────────────────────────
+
+const updateMarmite = () => {
+    const grSlider = document.getElementById('marmite-gr-rate');
+    const classSelect = document.getElementById('marmite-class');
+    if (!grSlider || !classSelect) return;
+
+    const grRate = parseFloat(grSlider.value) || 0;
+    const expClass = classSelect.value;
+    document.getElementById('marmite-gr-display').innerText = grRate;
+
+    // Limite NF EN 206 pour cette classe
+    const limit = MIX_LIMITS[expClass] ?? 30;
+    const capped = Math.min(grRate, limit);
+
+    // Bloquer le curseur visuellement au-dessus de la limite
+    grSlider.max = limit;
+    if (grRate > limit) {
+        grSlider.value = limit;
+        document.getElementById('marmite-gr-display').innerText = limit;
+    }
+    document.getElementById('marmite-limit').innerText = limit;
+
+    // Dosages standard par m³ (kg) — béton courant C25/30
+    const ciment   = 340;
+    const sable    = 800;
+    const totalGrav = 1000;
+    const eau      = 170;
+
+    // Fraction GR vs gravillon naturel
+    const grKg   = totalGrav * (capped / 100);
+    const gravKg = totalGrav - grKg;
+
+    // CO2 béton naturel (sans GR)
+    const co2Natural = (ciment * MIX_CO2.ciment) + (sable * MIX_CO2.sable) +
+                       (totalGrav * MIX_CO2.gravillon) + (eau * MIX_CO2.eau);
+
+    // CO2 béton avec GR
+    const co2Mix = (ciment * MIX_CO2.ciment) + (sable * MIX_CO2.sable) +
+                   (grKg * MIX_CO2.gr) + (gravKg * MIX_CO2.gravillon) + (eau * MIX_CO2.eau);
+
+    const co2Saved = co2Natural - co2Mix;
+    const savedPct = co2Natural > 0 ? (co2Saved / co2Natural * 100) : 0;
+
+    document.getElementById('marmite-co2-natural').innerText = co2Natural.toFixed(1);
+    document.getElementById('marmite-co2-mix').innerText     = co2Mix.toFixed(1);
+    document.getElementById('marmite-co2-saved').innerText   = co2Saved.toFixed(1);
+    document.getElementById('marmite-pct-saved').innerText   = savedPct.toFixed(1);
+
+    // Jauge verte — transition rouge→vert selon économie
+    const gauge = document.getElementById('marmite-gauge-fill');
+    if (gauge) {
+        gauge.style.width = `${Math.min(100, savedPct * 3)}%`;
+        gauge.style.background = savedPct > 5 ? '#10b981' : savedPct > 0 ? '#f59e0b' : '#ef4444';
+    }
+
+    // Message du Cuistot
+    let tip = '';
+    if (capped === 0) tip = "Aucun Granulat Recyclé — béton 100% naturel. Ajoutez de la recette !";
+    else if (capped >= limit && limit > 0) tip = `Limite NF EN 206 atteinte pour ${expClass} (${limit}%). Recette normée !`;
+    else tip = `${capped}% GR — votre béton économise ${co2Saved.toFixed(1)} kg CO₂/m³ 🏾`;
+    document.getElementById('marmite-tip').innerText = tip;
+};
+
+// ── MON EMPREINTE GR — CO2 de production ─────────────────────────────────
+
+const ADEME_GR_REF = 1.5; // kg CO2/t — référence granulat recyclé Base Carbone
+
+const updateEmpreinteGR = () => {
+    const fuel   = parseFloat(document.getElementById('gr-prod-fuel')?.value)   || 0;
+    const dist   = parseFloat(document.getElementById('gr-prod-dist')?.value)   || 0;
+    const inputT = parseFloat(document.getElementById('gr-prod-input')?.value)  || 0;
+    const kwh    = parseFloat(document.getElementById('gr-prod-kwh')?.value)    || 0;
+    const outT   = parseFloat(document.getElementById('gr-prod-output')?.value) || 0;
+
+    const co2Fuel      = fuel * EMISSIONS.GN_LITRE;                      // gasoil carburant concasseur
+    const co2Transport = dist * inputT * EMISSIONS.TRANSPORT_KM_TONNE;  // transport intrant
+    const co2Elec      = kwh * EMISSIONS.ELEC_KWH;
+    const co2Total     = co2Fuel + co2Transport + co2Elec;
+    const co2PerT      = outT > 0 ? co2Total / outT : 0;
+
+    const set = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val; };
+    set('gr-co2-machines',   co2Fuel.toFixed(1));
+    set('gr-co2-transport',  co2Transport.toFixed(1));
+    set('gr-co2-total',      co2Total.toFixed(1));
+    set('gr-co2-per-tonne',  co2PerT.toFixed(2));
+
+    const badge = document.getElementById('gr-ademe-badge');
+    if (badge && outT > 0) {
+        const diff = ADEME_GR_REF - co2PerT;
+        if (diff > 0) {
+            badge.textContent = `✓ ${diff.toFixed(2)} kg/t sous la réf. ADEME`;
+            badge.className = 'gr-badge gr-badge--good';
+        } else if (diff < 0) {
+            badge.textContent = `⚠ ${Math.abs(diff).toFixed(2)} kg/t au-dessus ADEME`;
+            badge.className = 'gr-badge gr-badge--warn';
+        } else {
+            badge.textContent = 'Égal à la référence ADEME';
+            badge.className = 'gr-badge';
+        }
+    } else if (badge) {
+        badge.textContent = `Réf. ADEME : ${ADEME_GR_REF} kg CO₂/t`;
+        badge.className = 'gr-badge';
+    }
+};
+
 // Initialisation
 updateCalculations();
+
+// Listeners Marmite
+const marmiteGr = document.getElementById('marmite-gr-rate');
+const marmiteClass = document.getElementById('marmite-class');
+if (marmiteGr) marmiteGr.addEventListener('input', updateMarmite);
+if (marmiteClass) marmiteClass.addEventListener('change', updateMarmite);
+updateMarmite();
+
+// Listeners Empreinte GR
+['gr-prod-fuel','gr-prod-dist','gr-prod-input','gr-prod-kwh','gr-prod-output'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', updateEmpreinteGR);
+});
+updateEmpreinteGR();
+
+// Bouton "Appliquer à la Marmite"
+const applyToMarmite = document.getElementById('gr-apply-marmite');
+if (applyToMarmite) {
+    applyToMarmite.onclick = () => {
+        const val = parseFloat(document.getElementById('gr-co2-per-tonne')?.innerText);
+        if (val > 0) {
+            MIX_CO2.gr = val / 1000; // kg CO2/t → kg CO2/kg
+            updateMarmite();
+            showToast(`✓ Marmite mise à jour — GR = ${val.toFixed(2)} kg CO₂/t`);
+        } else {
+            showToast('Saisissez les données de production d\'abord', true);
+        }
+    };
+}
 
 // ── SUPABASE PERSISTENCE ─────────────────────────────
 const TABLE = 'simulations_theoriques';
