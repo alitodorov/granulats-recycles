@@ -366,6 +366,10 @@ updateMarmite();
 });
 updateEmpreinteGR();
 
+const saveEmpreinteBtn = document.getElementById('gr-save-btn');
+if (saveEmpreinteBtn) saveEmpreinteBtn.addEventListener('click', saveEmpreinte);
+loadEmpreintesHistory();
+
 // Bouton "Appliquer à la Marmite"
 const applyToMarmite = document.getElementById('gr-apply-marmite');
 if (applyToMarmite) {
@@ -379,6 +383,85 @@ if (applyToMarmite) {
             showToast('Saisissez les données de production d\'abord', true);
         }
     };
+}
+
+// ── SUPABASE — EMPREINTES GR ──────────────────────────────
+const TABLE_GR = 'empreintes_gr';
+
+function collectEmpreinteData() {
+    const fuel  = parseFloat(document.getElementById('gr-prod-fuel')?.value)   || 0;
+    const dist  = parseFloat(document.getElementById('gr-prod-dist')?.value)   || 0;
+    const tIn   = parseFloat(document.getElementById('gr-prod-input')?.value)  || 0;
+    const kwh   = parseFloat(document.getElementById('gr-prod-kwh')?.value)    || 0;
+    const tOut  = parseFloat(document.getElementById('gr-prod-output')?.value) || 0;
+
+    const co2Machines   = parseFloat(document.getElementById('gr-co2-machines')?.innerText)   || 0;
+    const co2Transport  = parseFloat(document.getElementById('gr-co2-transport')?.innerText)  || 0;
+    const co2Total      = parseFloat(document.getElementById('gr-co2-total')?.innerText)      || 0;
+    const co2PerTonne   = parseFloat(document.getElementById('gr-co2-per-tonne')?.innerText)  || 0;
+    const vsAdeme       = parseFloat((ADEME_GR_REF - co2PerTonne).toFixed(3));
+
+    return {
+        t_input: tIn, fuel_liters: fuel, dist_km: dist, kwh, t_output: tOut,
+        co2_machines: co2Machines, co2_transport: co2Transport,
+        co2_total: co2Total, co2_per_tonne: co2PerTonne, vs_ademe: vsAdeme
+    };
+}
+
+async function saveEmpreinte() {
+    const defaultName = 'Session ' + new Date().toLocaleString('fr-FR');
+    const name = prompt('Nom de la session de concassage :', defaultName);
+    if (!name) return;
+    const { error } = await supabase.from(TABLE_GR).insert({ name, ...collectEmpreinteData() });
+    if (error) { showToast('Erreur : ' + error.message, true); return; }
+    showToast('✓ Empreinte GR sauvegardée');
+    loadEmpreintesHistory();
+}
+
+async function deleteEmpreinte(id) {
+    if (!confirm('Supprimer cette session ?')) return;
+    const { error } = await supabase.from(TABLE_GR).delete().eq('id', id);
+    if (error) { showToast('Erreur : ' + error.message, true); return; }
+    showToast('Session supprimée');
+    loadEmpreintesHistory();
+}
+
+function loadEmpreinteIntoForm(row) {
+    const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val ?? ''; };
+    set('gr-prod-input',  row.t_input);
+    set('gr-prod-fuel',   row.fuel_liters);
+    set('gr-prod-dist',   row.dist_km);
+    set('gr-prod-kwh',    row.kwh);
+    set('gr-prod-output', row.t_output);
+    updateEmpreinteGR();
+    showToast('✓ Session chargée : ' + row.name);
+}
+
+async function loadEmpreintesHistory() {
+    const { data, error } = await supabase.from(TABLE_GR).select('*').order('created_at', { ascending: false }).limit(20);
+    const list = document.getElementById('gr-history-list');
+    if (!list) return;
+    if (error || !data || data.length === 0) {
+        list.innerHTML = '<p class="empty-state">Aucune session enregistrée.</p>';
+        return;
+    }
+    list.innerHTML = data.map(row => {
+        const date = new Date(row.created_at).toLocaleDateString('fr-FR', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+        const diffVal = row.vs_ademe ?? 0;
+        const diffStyle = diffVal >= 0 ? 'color:var(--success)' : 'color:var(--danger)';
+        const diffLabel = diffVal >= 0 ? `✓ ${diffVal.toFixed(2)} sous ADEME` : `⚠ ${Math.abs(diffVal).toFixed(2)} au-dessus`;
+        return `<div class="history-item gr-history-item" data-id="${row.id}">
+            <div class="history-info">
+                <span class="history-name">${row.name}</span>
+                <span class="history-date">${date} · ${row.t_output ?? 0} t GR produit</span>
+            </div>
+            <span style="font-weight:700;font-size:0.9rem;${diffStyle}">${diffLabel}</span>
+            <div class="history-actions">
+                <button class="btn-icon" title="Recharger" onclick="loadEmpreinteIntoForm(${JSON.stringify(row).replace(/"/g, '&quot;')})">↻</button>
+                <button class="btn-icon delete" title="Supprimer" onclick="deleteEmpreinte('${row.id}')">🗑</button>
+            </div>
+        </div>`;
+    }).join('');
 }
 
 // ── SUPABASE PERSISTENCE ─────────────────────────────
