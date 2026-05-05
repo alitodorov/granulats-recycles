@@ -23,271 +23,294 @@
                 </div>
                 <p class="subtitle">Pilotage de Rentabilité & Impact Carbone</p>
             </div>
+        <!-- Navigation onglets -->
+        <nav class="tab-nav">
+            <button class="tab-btn active" data-tab="fabricant">🏭 Fabricant</button>
+            <button class="tab-btn" data-tab="production">♻️ Production GR</button>
+            <button class="tab-btn" data-tab="client">🧪 Client</button>
+            <button class="tab-btn tab-btn--demo" id="toggle-demo" data-demo="off">👁️ Mode Client</button>
+        </nav>
+        <!-- Bandeau mode démo -->
+        <div id="demo-banner" class="demo-banner" style="display:none;">
+            👁️ MODE DÉMO CLIENT — Seule la vue client est visible
+            <button onclick="document.getElementById('toggle-demo').click()" class="demo-exit">✕ Quitter</button>
+        </div>
         </header>
 
         <main>
             <section class="dashboard">
-                <!-- Saisie des données -->
-                <div class="card input-card">
-                    <h2><span class="icon">📥</span> Données d'entrée</h2>
-                    <form id="calc-form">
-                        <div class="form-group">
-                            <label for="buy-price">Redevance réception (€/t payés par client)</label>
-                            <input type="number" id="buy-price" value="10" step="0.5">
-                        </div>
-                        <div class="form-group">
-                            <label for="transport-dist">Distance transport amont (km)</label>
-                            <input type="number" id="transport-dist" value="20">
-                        </div>
-                        <div class="form-group">
-                            <label for="energy-cons">Conso GNR (L/tonne)</label>
-                            <div class="input-with-action">
-                                <input type="number" id="energy-cons" value="0.8" step="0.05">
-                                <button type="button" id="open-gnr-calc" class="btn-mini" title="Calculer depuis le terrain">🧮</button>
+
+                <!-- ONGLET FABRICANT -->
+                <div class="tab-section active" data-tab-section="fabricant">
+                    <!-- Saisie des données -->
+                    <div class="card input-card">
+                        <h2><span class="icon">📥</span> Données d'entrée</h2>
+                        <form id="calc-form">
+                            <div class="form-group">
+                                <label for="buy-price">Redevance réception (€/t payés par client)</label>
+                                <input type="number" id="buy-price" value="10" step="0.5">
+                            </div>
+                            <div class="form-group">
+                                <label for="transport-dist">Distance transport amont (km)</label>
+                                <input type="number" id="transport-dist" value="20">
+                            </div>
+                            <div class="form-group">
+                                <label for="energy-cons">Conso GNR (L/tonne)</label>
+                                <div class="input-with-action">
+                                    <input type="number" id="energy-cons" value="0.8" step="0.05">
+                                    <button type="button" id="open-gnr-calc" class="btn-mini" title="Calculer depuis le terrain">🧮</button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="sell-price">Prix de vente moyen (€/t)</label>
+                                <input type="number" id="sell-price" value="18" step="0.5">
+                            </div>
+                            <div class="form-group">
+                                <label for="total-tonnage-input">Tonnage cumulé mâchoires (t)</label>
+                                <input type="number" id="total-tonnage-input" value="12450" step="50">
+                            </div>
+                            <div class="form-actions">
+                                <button type="button" id="save-simulation" class="btn-primary">💾 Sauvegarder</button>
+                                <button type="button" onclick="window.print()" class="btn-secondary">📄 Rapport PDF</button>
+                                <a href="rentabilite-pratique.html" class="btn-secondary" style="display:block;text-align:center;text-decoration:none;margin-top:10px;">📊 Rentabilité Pratique</a>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Résultats -->
+                    <div class="card result-card">
+                        <h2><span class="icon">⚡</span> Performance Live</h2>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <label>Coût de revient</label>
+                                <div class="value" id="cost-value">0.00 €/t</div>
+                            </div>
+                            <div class="stat-item highlight">
+                                <label>Marge Nette</label>
+                                <div class="value" id="margin-value">0.00 €/t</div>
+                                <div class="badge">Objectif Atteint</div>
+                            </div>
+                            <div class="stat-item carbon">
+                                <label>Impact CO2</label>
+                                <div class="value" id="co2-value">0.00 kg/t</div>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label for="sell-price">Prix de vente moyen (€/t)</label>
-                            <input type="number" id="sell-price" value="18" step="0.5">
+                        <div id="breakdown" class="breakdown-detail"></div>
+                        <div class="chef-tip" id="chef-tip">
+                            <span class="tip-icon">👨🏾‍🍳</span>
+                            <p id="tip-text">Prêt à optimiser votre mélange ?</p>
                         </div>
-                        <div class="form-group">
-                            <label for="total-tonnage-input">Tonnage cumulé mâchoires (t)</label>
-                            <input type="number" id="total-tonnage-input" value="12450" step="50">
+                    </div>
+
+                    <!-- Performance & Maintenance -->
+                    <div class="card maintenance-card">
+                        <h2><span class="icon">⚙️</span> Performance & Maintenance</h2>
+                        <div class="stats-grid-3">
+                            <div class="stat-mini">
+                                <label>Tonnage Cumulé</label>
+                                <span id="total-tonnage">12,450 t</span>
+                            </div>
+                            <div class="stat-mini" id="jaw-wear-container">
+                                <label>Usure Mâchoires <span id="edit-lifespan" title="Modifier la durée de vie" style="cursor:pointer;float:right;transition:transform 0.2s;">⚙️</span></label>
+                                <div class="progress-bar"><div class="progress" id="jaw-wear-progress" style="width: 65%;"></div></div>
+                                <div style="display:flex; justify-content:space-between; align-items:center;">
+                                    <span class="progress-text" id="jaw-wear-text">65%</span>
+                                    <small id="lifespan-display" style="color:var(--text-muted);font-size:0.7rem;">Max: 20 000 t</small>
+                                </div>
+                            </div>
+                            <div class="stat-mini warning">
+                                <label>Rendement GNR</label>
+                                <span id="gnr-yield">0.85 L/t</span>
+                                <small>↑ 5% vs semaine dernière</small>
+                            </div>
                         </div>
-                        <div class="form-actions">
-                            <button type="button" id="save-simulation" class="btn-primary">💾 Sauvegarder</button>
-                            <button type="button" onclick="window.print()" class="btn-secondary">📄 Rapport PDF</button>
-                            <a href="rentabilite-pratique.html" class="btn-secondary" style="display:block;text-align:center;text-decoration:none;margin-top:10px;">📊 Rentabilité Pratique</a>
+                    </div>
+
+                    <!-- Trophées -->
+                    <div class="card trophies-card">
+                        <h2><span class="icon">🏆</span> Tes Exploits</h2>
+                        <div class="trophies-list">
+                            <div class="trophy locked" id="trophy-1" title="Économiser 100kg de CO2">🌱 Eco-Warrior</div>
+                            <div class="trophy locked" id="trophy-2" title="Marge > 5€/tonne">💰 Master Margin</div>
+                            <div class="trophy locked" id="trophy-3" title="Conso GNR < 0.8L/t">⛽ As du Volant</div>
                         </div>
-                    </form>
+                    </div>
+
+                    <!-- Historique -->
+                    <div class="card history-card">
+                        <h2><span class="icon">📜</span> Historique & Archives</h2>
+                        <p class="card-subtitle">Retrouvez vos simulations enregistrées dans le cloud.</p>
+                        <div id="compare-bar" class="compare-bar" style="display:none;">
+                            <button id="btn-compare" class="btn-primary" style="padding:10px 20px;font-size:0.85rem;">⚖️ Comparer les 2 sélections</button>
+                        </div>
+                        <div id="history-list" class="history-list">
+                            <p class="empty-state">Aucune simulation enregistrée pour le moment.</p>
+                        </div>
+                        <div id="compare-panel" class="compare-panel" style="display:none;"></div>
+                    </div>
                 </div>
 
-                <!-- Résultats -->
-                <div class="card result-card">
-                    <h2><span class="icon">⚡</span> Performance Live</h2>
-                    <div class="stats-grid">
-                        <div class="stat-item">
-                            <label>Coût de revient</label>
-                            <div class="value" id="cost-value">0.00 €/t</div>
-                        </div>
-                        <div class="stat-item highlight">
-                            <label>Marge Nette</label>
-                            <div class="value" id="margin-value">0.00 €/t</div>
-                            <div class="badge">Objectif Atteint</div>
-                        </div>
-                        <div class="stat-item carbon">
-                            <label>Impact CO2</label>
-                            <div class="value" id="co2-value">0.00 kg/t</div>
-                        </div>
-                    </div>
-                    <div id="breakdown" class="breakdown-detail"></div>
-                    <div class="chef-tip" id="chef-tip">
-                        <span class="tip-icon">👨🏾‍🍳</span>
-                        <p id="tip-text">Prêt à optimiser votre mélange ?</p>
-                    </div>
-                </div>
+                <!-- ONGLET PRODUCTION GR -->
+                <div class="tab-section" data-tab-section="production">
+                    <!-- Mon Empreinte GR -->
+                    <div class="card empreinte-gr-card">
+                        <h2><span class="icon">♻️</span> Mon Empreinte GR</h2>
+                        <p class="card-subtitle">Calculez le CO₂ réel de votre production de Granulats Recyclés (par session de concassage).</p>
 
-                <!-- Mon Empreinte GR — CO2 production -->
-                <div class="card empreinte-gr-card">
-                    <h2><span class="icon">♻️</span> Mon Empreinte GR</h2>
-                    <p class="card-subtitle">Calculez le CO₂ réel de votre production de Granulats Recyclés (par session de concassage).</p>
+                        <div class="empreinte-inputs">
+                            <div class="form-group">
+                                <label for="gr-prod-input">Intrant reçu (t béton/gravats)</label>
+                                <input type="number" id="gr-prod-input" value="500" step="10" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="gr-prod-fuel">Gasoil concasseur/cribleur (L)</label>
+                                <input type="number" id="gr-prod-fuel" value="200" step="5" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="gr-prod-dist">Distance transport intrant (km)</label>
+                                <input type="number" id="gr-prod-dist" value="20" step="1" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="gr-prod-kwh">Électricité consommée (kWh, optionnel)</label>
+                                <input type="number" id="gr-prod-kwh" value="0" step="10" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="gr-prod-output">GR produit en sortie (t)</label>
+                                <input type="number" id="gr-prod-output" value="420" step="10" min="0">
+                            </div>
+                        </div>
 
-                    <div class="empreinte-inputs">
-                        <div class="form-group">
-                            <label for="gr-prod-input">Intrant reçu (t béton/gravats)</label>
-                            <input type="number" id="gr-prod-input" value="500" step="10" min="0">
+                        <div class="empreinte-results">
+                            <div class="empreinte-stat">
+                                <label>CO₂ machines</label>
+                                <span id="gr-co2-machines">—</span>
+                                <small>kg CO₂</small>
+                            </div>
+                            <div class="empreinte-stat">
+                                <label>CO₂ transport</label>
+                                <span id="gr-co2-transport">—</span>
+                                <small>kg CO₂</small>
+                            </div>
+                            <div class="empreinte-stat empreinte-stat--total">
+                                <label>CO₂ total</label>
+                                <span id="gr-co2-total">—</span>
+                                <small>kg CO₂</small>
+                            </div>
+                            <div class="empreinte-stat empreinte-stat--per-tonne">
+                                <label>Votre GR</label>
+                                <span id="gr-co2-per-tonne">—</span>
+                                <small>kg CO₂ / t GR</small>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="gr-prod-fuel">Gasoil concasseur/cribleur (L)</label>
-                            <input type="number" id="gr-prod-fuel" value="200" step="5" min="0">
-                        </div>
-                        <div class="form-group">
-                            <label for="gr-prod-dist">Distance transport intrant (km)</label>
-                            <input type="number" id="gr-prod-dist" value="20" step="1" min="0">
-                        </div>
-                        <div class="form-group">
-                            <label for="gr-prod-kwh">Électricité consommée (kWh, optionnel)</label>
-                            <input type="number" id="gr-prod-kwh" value="0" step="10" min="0">
-                        </div>
-                        <div class="form-group">
-                            <label for="gr-prod-output">GR produit en sortie (t)</label>
-                            <input type="number" id="gr-prod-output" value="420" step="10" min="0">
-                        </div>
-                    </div>
 
-                    <div class="empreinte-results">
-                        <div class="empreinte-stat">
-                            <label>CO₂ machines</label>
-                            <span id="gr-co2-machines">—</span>
-                            <small>kg CO₂</small>
+                        <div class="empreinte-ademe">
+                            <span id="gr-ademe-badge" class="gr-badge">Réf. ADEME : 1.5 kg CO₂/t</span>
                         </div>
-                        <div class="empreinte-stat">
-                            <label>CO₂ transport</label>
-                            <span id="gr-co2-transport">—</span>
-                            <small>kg CO₂</small>
-                        </div>
-                        <div class="empreinte-stat empreinte-stat--total">
-                            <label>CO₂ total</label>
-                            <span id="gr-co2-total">—</span>
-                            <small>kg CO₂</small>
-                        </div>
-                        <div class="empreinte-stat empreinte-stat--per-tonne">
-                            <label>Votre GR</label>
-                            <span id="gr-co2-per-tonne">—</span>
-                            <small>kg CO₂ / t GR</small>
-                        </div>
-                    </div>
 
-                    <div class="empreinte-ademe">
-                        <span id="gr-ademe-badge" class="gr-badge">Réf. ADEME : 1.5 kg CO₂/t</span>
-                    </div>
-
-                    <button type="button" id="gr-apply-marmite" class="btn-apply-marmite">
-                        👨🏾‍🍳 Utiliser ce chiffre dans la Marmite
-                    </button>
-                    <div class="gr-history-section">
-                        <button type="button" id="gr-save-btn" class="btn-save-empreinte">
-                            💾 Sauvegarder cette session
+                        <button type="button" id="gr-apply-marmite" class="btn-apply-marmite">
+                            👨🏾‍🍳 Utiliser ce chiffre dans la Marmite
                         </button>
-                        <h3 class="gr-history-title">📊 Historique des sessions</h3>
-                        <div id="gr-history-list" class="gr-history-list">
-                            <p class="empty-state">Aucune session enregistrée.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- La Marmite du Cuistot — Mix-Design Carbone -->
-                <div class="card marmite-card">
-                    <h2><span class="icon">👨🏾‍🍳</span> La Marmite du Cuistot</h2>
-                    <p class="card-subtitle">Composez votre béton et visualisez l'impact carbone en direct (base : 1 m³ C25/30).</p>
-
-                    <div class="form-group">
-                        <label for="marmite-class">Classe d'exposition (NF EN 206)</label>
-                        <select id="marmite-class">
-                            <option value="X0">X0 — Pas de risque (gros béton)</option>
-                            <option value="XC1" selected>XC1 — Intérieur sec (dalles, poutres)</option>
-                            <option value="XC2">XC2 — Humide (fondations)</option>
-                            <option value="XC3">XC3/4 — Extérieur (voiles, façades)</option>
-                            <option value="XF1">XF1 — Gel modéré (trottoirs)</option>
-                            <option value="XA1">XA1 — Attaque chimique (interdit GR)</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="marmite-gr-rate">
-                            Part de Granulat Recyclé (GR)
-                            <span class="limit-badge">Limite NF EN 206 : <strong id="marmite-limit">30</strong>%</span>
-                        </label>
-                        <input type="range" id="marmite-gr-rate" min="0" max="30" value="15">
-                        <div class="range-value"><span id="marmite-gr-display">15</span> %</div>
-                    </div>
-
-                    <div class="marmite-gauge-wrap">
-                        <div class="marmite-gauge-bar">
-                            <div id="marmite-gauge-fill" class="marmite-gauge-fill" style="width:15%"></div>
-                        </div>
-                        <span class="gauge-label">Économie CO₂</span>
-                    </div>
-
-                    <div class="marmite-results">
-                        <div class="marmite-stat">
-                            <label>Béton 100% naturel</label>
-                            <span id="marmite-co2-natural">—</span>
-                            <small>kg CO₂/m³</small>
-                        </div>
-                        <div class="marmite-stat marmite-stat--gr">
-                            <label>Béton avec GR</label>
-                            <span id="marmite-co2-mix">—</span>
-                            <small>kg CO₂/m³</small>
-                        </div>
-                        <div class="marmite-stat marmite-stat--saved">
-                            <label>CO₂ économisé</label>
-                            <span id="marmite-co2-saved">—</span>
-                            <small>kg/m³ (<span id="marmite-pct-saved">0</span>%)</small>
-                        </div>
-                    </div>
-
-                    <div class="marmite-tip-box">
-                        <span>🏾</span>
-                        <p id="marmite-tip">Ajustez la recette pour voir l'impact.</p>
-                    </div>
-                </div>
-
-                <!-- Simulateur Mix-Design (Phase 2) -->
-                <div class="card mix-design-card">
-                    <h2><span class="icon">🧪</span> Simulateur Client (Mix-Design)</h2>
-                    <div class="form-group">
-                        <label for="exposure-class">Classe d'exposition (NF EN 206)</label>
-                        <select id="exposure-class">
-                            <option value="X0">X0 - Non armé (Gros béton)</option>
-                            <option value="XC1">XC1 - Intérieur (Dalles)</option>
-                            <option value="XC2">XC2 - Humide (Fondations)</option>
-                            <option value="XC3">XC3/4 - Extérieur (Voiles)</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="substitution-rate">Taux de substitution (%)</label>
-                        <input type="range" id="substitution-rate" min="0" max="50" value="15">
-                        <div class="range-value"><span id="rate-display">15</span> %</div>
-                    </div>
-                    <div class="client-results">
-                        <div class="stat-small">
-                            <label>Gain Éco Client</label>
-                            <span id="client-gain">0.00 €/m³</span>
-                        </div>
-                        <div class="stat-small">
-                            <label>Économie CO2</label>
-                            <span id="client-co2-gain">0.00 kg/m³</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Performance & Maintenance (Phase 3) -->
-                <div class="card maintenance-card">
-                    <h2><span class="icon">⚙️</span> Performance & Maintenance</h2>
-                    <div class="stats-grid-3">
-                        <div class="stat-mini">
-                            <label>Tonnage Cumulé</label>
-                            <span id="total-tonnage">12,450 t</span>
-                        </div>
-                        <div class="stat-mini" id="jaw-wear-container">
-                            <label>Usure Mâchoires <span id="edit-lifespan" title="Modifier la durée de vie" style="cursor:pointer;float:right;transition:transform 0.2s;">⚙️</span></label>
-                            <div class="progress-bar"><div class="progress" id="jaw-wear-progress" style="width: 65%;"></div></div>
-                            <div style="display:flex; justify-content:space-between; align-items:center;">
-                                <span class="progress-text" id="jaw-wear-text">65%</span>
-                                <small id="lifespan-display" style="color:var(--text-muted);font-size:0.7rem;">Max: 20 000 t</small>
+                        <div class="gr-history-section">
+                            <button type="button" id="gr-save-btn" class="btn-save-empreinte">
+                                💾 Sauvegarder cette session
+                            </button>
+                            <h3 class="gr-history-title">📊 Historique des sessions</h3>
+                            <div id="gr-history-list" class="gr-history-list">
+                                <p class="empty-state">Aucune session enregistrée.</p>
                             </div>
                         </div>
-                        <div class="stat-mini warning">
-                            <label>Rendement GNR</label>
-                            <span id="gnr-yield">0.85 L/t</span>
-                            <small>↑ 5% vs semaine dernière</small>
+                    </div>
+
+                    <!-- La Marmite du Cuistot -->
+                    <div class="card marmite-card">
+                        <h2><span class="icon">👨🏾‍🍳</span> La Marmite du Cuistot</h2>
+                        <p class="card-subtitle">Composez votre béton et visualisez l'impact carbone en direct (base : 1 m³ C25/30).</p>
+
+                        <div class="form-group">
+                            <label for="marmite-class">Classe d'exposition (NF EN 206)</label>
+                            <select id="marmite-class">
+                                <option value="X0">X0 — Pas de risque (gros béton)</option>
+                                <option value="XC1" selected>XC1 — Intérieur sec (dalles, poutres)</option>
+                                <option value="XC2">XC2 — Humide (fondations)</option>
+                                <option value="XC3">XC3/4 — Extérieur (voiles, façades)</option>
+                                <option value="XF1">XF1 — Gel modéré (trottoirs)</option>
+                                <option value="XA1">XA1 — Attaque chimique (interdit GR)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="marmite-gr-rate">
+                                Part de Granulat Recyclé (GR)
+                                <span class="limit-badge">Limite NF EN 206 : <strong id="marmite-limit">30</strong>%</span>
+                            </label>
+                            <input type="range" id="marmite-gr-rate" min="0" max="30" value="15">
+                            <div class="range-value"><span id="marmite-gr-display">15</span> %</div>
+                        </div>
+
+                        <div class="marmite-gauge-wrap">
+                            <div class="marmite-gauge-bar">
+                                <div id="marmite-gauge-fill" class="marmite-gauge-fill" style="width:15%"></div>
+                            </div>
+                            <span class="gauge-label">Économie CO₂</span>
+                        </div>
+
+                        <div class="marmite-results">
+                            <div class="marmite-stat">
+                                <label>Béton 100% naturel</label>
+                                <span id="marmite-co2-natural">—</span>
+                                <small>kg CO₂/m³</small>
+                            </div>
+                            <div class="marmite-stat marmite-stat--gr">
+                                <label>Béton avec GR</label>
+                                <span id="marmite-co2-mix">—</span>
+                                <small>kg CO₂/m³</small>
+                            </div>
+                            <div class="marmite-stat marmite-stat--saved">
+                                <label>CO₂ économisé</label>
+                                <span id="marmite-co2-saved">—</span>
+                                <small>kg/m³ (<span id="marmite-pct-saved">0</span>%)</small>
+                            </div>
+                        </div>
+
+                        <div class="marmite-tip-box">
+                            <span>🏾</span>
+                            <p id="marmite-tip">Ajustez la recette pour voir l'impact.</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- Trophées & Fun (Option E) -->
-                <div class="card trophies-card">
-                    <h2><span class="icon">🏆</span> Tes Exploits</h2>
-                    <div class="trophies-list">
-                        <div class="trophy locked" id="trophy-1" title="Économiser 100kg de CO2">🌱 Eco-Warrior</div>
-                        <div class="trophy locked" id="trophy-2" title="Marge > 5€/tonne">💰 Master Margin</div>
-                        <div class="trophy locked" id="trophy-3" title="Conso GNR < 0.8L/t">⛽ As du Volant</div>
+                <!-- ONGLET CLIENT -->
+                <div class="tab-section" data-tab-section="client">
+                    <!-- Simulateur Mix-Design -->
+                    <div class="card mix-design-card">
+                        <h2><span class="icon">🧪</span> Simulateur Client (Mix-Design)</h2>
+                        <div class="form-group">
+                            <label for="exposure-class">Classe d'exposition (NF EN 206)</label>
+                            <select id="exposure-class">
+                                <option value="X0">X0 - Non armé (Gros béton)</option>
+                                <option value="XC1">XC1 - Intérieur (Dalles)</option>
+                                <option value="XC2">XC2 - Humide (Fondations)</option>
+                                <option value="XC3">XC3/4 - Extérieur (Voiles)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="substitution-rate">Taux de substitution (%)</label>
+                            <input type="range" id="substitution-rate" min="0" max="50" value="15">
+                            <div class="range-value"><span id="rate-display">15</span> %</div>
+                        </div>
+                        <div class="client-results">
+                            <div class="stat-small">
+                                <label>Gain Éco Client</label>
+                                <span id="client-gain">0.00 €/m³</span>
+                            </div>
+                            <div class="stat-small">
+                                <label>Économie CO2</label>
+                                <span id="client-co2-gain">0.00 kg/m³</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Historique des Sauvegardes -->
-                <div class="card history-card">
-                    <h2><span class="icon">📜</span> Historique & Archives</h2>
-                    <p class="card-subtitle">Retrouvez vos simulations enregistrées dans le cloud.</p>
-                    <div id="compare-bar" class="compare-bar" style="display:none;">
-                        <button id="btn-compare" class="btn-primary" style="padding:10px 20px;font-size:0.85rem;">⚖️ Comparer les 2 sélections</button>
-                    </div>
-                    <div id="history-list" class="history-list">
-                        <p class="empty-state">Aucune simulation enregistrée pour le moment.</p>
-                    </div>
-                    <div id="compare-panel" class="compare-panel" style="display:none;"></div>
-                </div>
             </section>
 
             <!-- Graphique ou détails -->

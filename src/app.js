@@ -594,3 +594,34 @@ async function loadSim(id) {
 document.getElementById('save-simulation').addEventListener('click', saveSimulation);
 document.getElementById('btn-compare').addEventListener('click', showCompare);
 loadHistory();
+
+// ── NAVIGATION ONGLETS + MODE DÉMO ───────────────────────
+(function () {
+    // Onglets
+    document.querySelectorAll('.tab-btn[data-tab]').forEach(btn => {
+        if (btn.id === 'toggle-demo') return;
+        btn.addEventListener('click', () => {
+            const tab = btn.dataset.tab;
+            document.querySelectorAll('.tab-btn[data-tab]').forEach(b => {
+                if (b.id !== 'toggle-demo') b.classList.remove('active');
+            });
+            btn.classList.add('active');
+            document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active'));
+            const section = document.querySelector(`.tab-section[data-tab-section="${tab}"]`);
+            if (section) section.classList.add('active');
+        });
+    });
+
+    // Mode démo
+    const demoBtn = document.getElementById('toggle-demo');
+    const demoBanner = document.getElementById('demo-banner');
+    if (demoBtn) {
+        demoBtn.addEventListener('click', () => {
+            const isDemo = document.body.classList.toggle('demo-mode');
+            demoBtn.classList.toggle('demo-active', isDemo);
+            demoBtn.dataset.demo = isDemo ? 'on' : 'off';
+            demoBtn.textContent = isDemo ? '✕ Mode Opérateur' : '👁️ Mode Client';
+            if (demoBanner) demoBanner.style.display = isDemo ? 'flex' : 'none';
+        });
+    }
+})();

@@ -768,6 +768,101 @@ input[type="range"] {
     line-height: 1.5;
 }
 
+/* ── Navigation onglets ─────────────────────────────────── */
+.tab-nav {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 25px;
+    flex-wrap: wrap;
+}
+
+.tab-btn {
+    padding: 10px 22px;
+    border-radius: 50px;
+    border: 1px solid var(--glass-border);
+    background: rgba(255,255,255,0.05);
+    color: var(--text-muted);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.tab-btn:hover {
+    background: rgba(255,255,255,0.1);
+    color: var(--text);
+}
+
+.tab-btn.active {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: var(--bg-dark);
+    border-color: transparent;
+    box-shadow: 0 4px 15px rgba(0,242,254,0.3);
+}
+
+.tab-btn--demo {
+    background: rgba(16,185,129,0.1);
+    border-color: rgba(16,185,129,0.3);
+    color: #10b981;
+    margin-left: 10px;
+}
+
+.tab-btn--demo.demo-active {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    border-color: transparent;
+    box-shadow: 0 4px 15px rgba(16,185,129,0.4);
+}
+
+/* ── Sections onglets ────────────────────────────────────── */
+.tab-section {
+    display: none;
+    grid-column: 1 / -1;
+}
+
+.tab-section.active {
+    display: contents;
+}
+
+/* ── Bandeau mode démo ───────────────────────────────────── */
+.demo-banner {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    text-align: center;
+    padding: 10px 20px;
+    border-radius: 14px;
+    font-weight: 700;
+    font-size: 0.88rem;
+    margin-top: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    animation: fadeInUp 0.4s ease-out;
+}
+
+.demo-exit {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 0.82rem;
+    transition: background 0.2s;
+}
+
+.demo-exit:hover { background: rgba(255,255,255,0.35); }
+
+/* ── Mode démo — masquer cartes non-démo ─────────────────── */
+body.demo-mode .tab-section { display: contents !important; }
+body.demo-mode .card { display: none !important; }
+body.demo-mode .marmite-card,
+body.demo-mode .mix-design-card { display: block !important; }
+
 footer {
     text-align: center;
     margin-top: 50px;
